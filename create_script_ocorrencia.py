@@ -64,7 +64,7 @@ def run(csv):
 
         query_insert = 'INSERT INTO empregos.ocorrencia\
                        (regiaoId, estadoId, codigoIbge, municipio, tipo_crime, quantidade, data)\
-                        VALUES (%s, %s, %s, `%s`, `%s`, %s, `%s`);\n'\
+                        VALUES (%s, %s, %s, "%s", "%s", %s, "%s");\n'\
                        % (regiao_id, estado_id, row["Código IBGE Município"], row["Município"], crime_id, row["PC-Qtde Ocorrências"], data)
         queries.append(query_insert)
 
