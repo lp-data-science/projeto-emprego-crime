@@ -52,6 +52,7 @@ def run(csv):
     df = pd.read_csv(join(src_dir, csv), encoding='utf-8', sep=';')
 
     print(csv, datetime.now())
+    count_ni = 0
     for index, row in df.iterrows():
         estado_id = estado[row['Sigla UF']]
         regiao_id = regiao[row['Região']]
@@ -62,16 +63,20 @@ def run(csv):
         tipo_crime = normalize_string(row["Tipo Crime"])
         crime_id = crime[tipo_crime]
 
-        query_insert = 'INSERT INTO empregos.ocorrencia\
-                       (regiaoId, estadoId, codigoIbge, municipio, tipo_crime, quantidade, data)\
-                        VALUES (%s, %s, %s, "%s", "%s", %s, "%s");\n'\
-                       % (regiao_id, estado_id, row["Código IBGE Município"], row["Município"], crime_id, row["PC-Qtde Ocorrências"], data)
-        queries.append(query_insert)
+        if row["Código IBGE Município"] != "NI":
+            query_insert = 'INSERT INTO empregos.ocorrencia\
+                           (regiaoId, estadoId, codigoIbge, municipio, tipo_crime, quantidade, data)\
+                            VALUES (%s, %s, %s, "%s", "%s", %s, "%s");\n'\
+                           % (regiao_id, estado_id, row["Código IBGE Município"], row["Município"], crime_id, row["PC-Qtde Ocorrências"], data)
+            queries.append(query_insert)
+        else:
+            count_ni += 1
 
     print('escrevendo', datetime.now())
     with open(join(output_dir, file_name), mode='w') as script:
         script.writelines(queries)
     print('finalizado', datetime.now())
+    print("Total entradas com 'NI': {}".format(count_ni))
 
 
 def normalize_string(raw_str):
