@@ -76,7 +76,7 @@ def run(csv):
     with open(join(output_dir, file_name), mode='w') as script:
         script.writelines(queries)
     print('finalizado', datetime.now())
-    print("Total entradas com 'NI': {}".format(count_ni))
+    print("Total entradas com 'NI': {}".format(count_ni))pip3
 
 
 def normalize_string(raw_str):
