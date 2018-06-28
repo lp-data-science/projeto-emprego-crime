@@ -17,6 +17,7 @@ def get_json_file_empregos(link):
     contador += 1
     json_file = response.json()
     with open(join(empregos_dir, file_name), 'w') as f:
+
         f.write(str(json_file).replace("\'", "\"").replace("False", "0").replace("True", "1"))
 
 #########################################################################################################
