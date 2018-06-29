@@ -1,6 +1,10 @@
 import pandas as pd
+from os import getcwd
+from os.path import join
 
-dir="C:\\Users\\vinic\\Desktop\\Projeto\\ProjetoDatascience\\ProjetoDatascience\\Dados população\\PROJECOES_2013_POPULACAO.xls"
+current_dir = getcwd()
+dir = join(current_dir, "dados_populacao/PROJECOES_2013_POPULACAO.xls")
+
 
 def getState(state):
     if len(state)==2:
