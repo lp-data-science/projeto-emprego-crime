@@ -21,8 +21,6 @@ def fillDataFramesOcorrencias(file):
 
     file_name = file_list[7][0:-4]
 
-
-
     data_frame_list[file_name] = df
 
     f.close()

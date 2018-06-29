@@ -28,7 +28,6 @@ dfs = [getDataframe(file = file,state = x) for x in sheets]
 data_frame_population_men= list(map(getMenPopulation, dfs))
 data_frame_population_women = list(map(getWomenPopulation, dfs))
 data_frame_population_state = list(map(getStatePopulation, dfs))
-#df = data_frame.parse("RO")
 
 dic_state_population={}
 for i in sheets:
