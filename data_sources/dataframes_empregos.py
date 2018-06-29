@@ -6,14 +6,9 @@ import glob
 
 current_dir = getcwd()
 empregos_dir = join(current_dir, "dados_empregos/*.txt")
-file_name = 'Número de Admitidos-Desligados por UF, Faixa Etária até 17 Anos - Admitidos-Desligados, Ad.txt'
 
 files = glob.glob(empregos_dir)
-
 data_frame_list = {}
-
-print(len(data_frame_list))
-
 
 def fillDataFramesEmpregos(file):
     global data_frame_list
