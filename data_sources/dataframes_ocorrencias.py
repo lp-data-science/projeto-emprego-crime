@@ -13,7 +13,7 @@ data_frame_list = {}
 def fillDataFramesOcorrencias(file):
     global data_frame_list
 
-    f = open(file, 'r', encoding='iso-8859-15')
+    f = open(file, 'r', encoding='utf-8')
 
     df = pd.read_csv(f, sep=';')
 
@@ -26,3 +26,11 @@ def fillDataFramesOcorrencias(file):
     f.close()
 
     return data_frame_list
+
+for file in files:
+    a = fillDataFramesOcorrencias(file)
+b = data_frame_list['ocorrenciasmun-brasil2014'].where(data_frame_list['ocorrenciasmun-brasil2014']['Tipo Crime'] == 'Estupro')
+c = b.where(b['Sigla UF'] == 'PB')
+print(b['Tipo Crime'].dropna())
+print(b['PC-Qtde Ocorrências'].dropna())
+print(c.dropna())
