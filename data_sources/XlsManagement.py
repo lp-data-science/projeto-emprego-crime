@@ -72,7 +72,7 @@ hm_wide = HeatMap(
     max_zoom=1,
 )
 
-gmap = gmplot.GoogleMapPlotter(-8.0349386, -34.935435, 15)
+gmap = gmplot.GoogleMapPlotter(-8.0349386, -34.935435, 7)
 latitudes = dic_state_population['PE']['state']['LAT']
 longitudes = dic_state_population['PE']['state']['LON']
 gmap.heatmap(latitudes, longitudes)
