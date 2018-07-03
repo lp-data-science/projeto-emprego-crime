@@ -37,22 +37,23 @@ def fillDataFramesOcorrencias(file):
 
     return data_frame_list
 
+
+def createMap(tupla_crime_uf):
+    """
+    função para retornar os valores totais dos crimes por cada chave
+    """
+    global b
+    return b[tupla_crime_uf]
+
+
 #TODO - tirar o for
 for file in files:
     a = fillDataFramesOcorrencias(file)
-# b = data_frame_list['ocorrenciasmun-brasil2014'].where(data_frame_list['ocorrenciasmun-brasil2014']['Tipo Crime'] == 'Estupro')
-# c = b.where(b['Sigla UF'] == 'PB')
-# print(b['Tipo Crime'].dropna())
-# print(b['PC-Qtde Ocorrências'].dropna())
-# print(c.dropna())
-b = data_frame_list['ocorrenciasmun-brasil2014']
-d = b.join(df_coord.set_index(3), on='Sigla UF')
-#print(d)
-# b = data_frame_list['ocorrenciasmun-brasil2014'].groupby(['Tipo Crime', 'Sigla UF'])['PC-Qtde Ocorrências'].sum()
-b = d.groupby(['Tipo Crime', 'Sigla UF', 1, 2])['PC-Qtde Ocorrências'].sum()
-#crimes_estados = b.loc[:,:].index.values
-#print(b[b.index.values == ('Estupro','AL')])
-print(b)
 
+b = data_frame_list['ocorrenciasmun-brasil2014']
+d = b.join(df_coord.set_index(3), on='Sigla_UF')
+b = d.groupby(['Tipo_Crime', 'Sigla_UF', 1, 2])['PC-Qtde_Ocorrências'].sum().reset_index(name='total')
+
+print(b[b.Tipo_Crime == 'Estupro'])
 
 
