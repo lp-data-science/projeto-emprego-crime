@@ -9,14 +9,18 @@ empregos_dir = join(current_dir, "dados_empregos/*.txt")
 
 files = glob.glob(empregos_dir)
 data_frame_list = {}
+file_names = []
+
 
 def fillDataFramesEmpregos(file):
     global data_frame_list
+    global file_names
 
     f = open(file, 'r', encoding='iso-8859-15')
     line = f.readline()
     dict = literal_eval(line)
     key = dict["nome"]
+    file_names.append(key)
 
     df = pd.DataFrame(dict["valores"])
     data_frame_list[key] = df
@@ -32,8 +36,16 @@ def testeDf(key, dataframe_list):
 
 
 def getDataFramesEmpregos():
+    global file_names
+    file_names = []
     return list(map(fillDataFramesEmpregos, files))
+
+
+
+
+#TODO -> dividir as consultas por categorias como gênero, admitidos, demitidos, setor, grau de instrução
 
 a = getDataFramesEmpregos()
 
 print(len(a))
+print(len(file_names))
