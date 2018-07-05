@@ -1,17 +1,10 @@
 from os import getcwd
 
-from data_sources.dataframes_ocorrencias import crimeByAno
 
-'''import folium
-import gmplot
-from folium import plugins
-from folium.plugins import HeatMap'''
-from os.path import join
 import pandas as pd
 # import geopandas as gpd
 from os import getcwd
 from os.path import join
-from dataframes_ocorrencias import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
