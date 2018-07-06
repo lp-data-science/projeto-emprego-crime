@@ -14,6 +14,7 @@ current_dir = getcwd()
 ocorrencias_dir = join(current_dir, "dados_ocorrencias/*.csv")
 estados_dir = join(current_dir, "dados_ocorrencias/estados_2010/estados_2010.shx")
 municipios_dir = join(current_dir, "dados_ocorrencias/municipios_2010/municipios_2010.shx")
+regioes_dir = join(current_dir, "dados_ocorrencias/regioes_2010/regioes_2010.shx")
 
 files = glob.glob(ocorrencias_dir)
 data_frame_list = {}
@@ -52,8 +53,6 @@ gdf = geopandas.GeoDataFrame.from_file(municipios_dir)
 
 gdf.plot()
 
-
-
 dataframe_ocorrencia = data_frame_list['ocorrenciasmun-brasil2014']
 dataframe_ocorrencia_municipio_join = dataframe_ocorrencia.join(df_municipios.set_index('Municipio'), on='Município')
 dataframe_ocorrencia_join_populacao = dataframe_ocorrencia_municipio_join.join(df_pop.set_index('Município'), on='Município').dropna()
@@ -64,12 +63,13 @@ dataframe_agrupado = dataframe_ocorrencia_join_populacao.groupby(['Tipo_Crime', 
 latitudes = dataframe_agrupado[dataframe_agrupado.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['Latitude'].astype(float)
 longitudes = dataframe_agrupado[dataframe_agrupado.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['Longitude'].astype(float)
 
-plt.scatter(y=latitudes, x=longitudes, alpha=0.5, c='r')
+quantidade = dataframe_agrupado[dataframe_agrupado.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['total'].astype(int)
+# populacao = dataframe_ocorrencia_join_populacao[dataframe_ocorrencia_join_populacao.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['População_residente'].astype(int)
+
+plt.scatter(y=latitudes, x=longitudes, alpha=0.5, s=quantidade, c='r')
 
 plt.show()
-# quantidade = dataframe_agrupado[dataframe_agrupado.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['total'].astype(int)
-# populacao = dataframe_ocorrencia_join_populacao[dataframe_ocorrencia_join_populacao.Tipo_Crime == 'Roubo seguido de morte (latrocínio)']['População_residente'].astype(int)
-#
+
 # gmap.heatmap(latitudes, longitudes, threshold=50, radius=15)
 #
 # gmap.draw("ocorrencias_latrocinio_teste.html")
