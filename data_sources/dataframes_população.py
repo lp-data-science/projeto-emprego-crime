@@ -9,14 +9,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
+ANOS = ['2010', '2011', '2012', '2013', '2014']
+dataframes_population = {} # Todos os dataframes
 
 current_dir = getcwd()
 dir = join(current_dir, "dados_populacao/PROJECOES_2013_POPULACAO.xls")
 
-current_dir = getcwd()
-dir = join(current_dir, 'dados_populacao/PROJECOES_2013_POPULACAO.xls')
+def create_dataframes(ano):
+    dir_csv = join(current_dir, 'dados_populacao/populacao_municipio_{}.csv'.format(ano))
+    df = pd.read_csv(dir_csv, encoding='iso-8859-15', sep=';')
+    return df
 
+def get_dataframe_ano(ano):
+    dataframe = create_dataframes(ano)
+    return dataframe
 
+########################
 def getState(state):
     if len(state) == 2:
         return state
@@ -65,18 +73,18 @@ for i in range(0, len(sheets)):
 
 
 
-df = (dic_state_population["PE"]["state"])
-df = df.iloc[0][11:16]
-blue_patch = mpatches.Patch(color='blue', label='PE')
-df.plot(color='blue')
-
-df2 = (dic_state_population["SP"]["state"])
-df2 = df2.iloc[0][11:16]
-red_patch = mpatches.Patch(color='red', label='SP')
-plt.legend(title='Estados', handles=[red_patch, blue_patch])
-df2.plot(color='red')
-
-
-plt.xlabel("ano")
-plt.ylabel("população")
-plt.show()
+# df = (dic_state_population["PE"]["state"])
+# df = df.iloc[0][11:16]
+# blue_patch = mpatches.Patch(color='blue', label='PE')
+# df.plot(color='blue')
+#
+# df2 = (dic_state_population["SP"]["state"])
+# df2 = df2.iloc[0][11:16]
+# red_patch = mpatches.Patch(color='red', label='SP')
+# plt.legend(title='Estados', handles=[red_patch, blue_patch])
+# df2.plot(color='red')
+#
+#
+# plt.xlabel("ano")
+# plt.ylabel("população")
+# plt.show()
