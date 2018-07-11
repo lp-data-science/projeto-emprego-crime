@@ -1,30 +1,29 @@
+import glob
 from os import getcwd
-
-
 import pandas as pd
-# import geopandas as gpd
 from os import getcwd
 from os.path import join
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-ANOS = ['2010', '2011', '2012', '2013', '2014']
 dataframes_population = {} # Todos os dataframes
 
 current_dir = getcwd()
 dir = join(current_dir, "dados_populacao/PROJECOES_2013_POPULACAO.xls")
+state_pop_files = join(current_dir, "dados_populacao/*.csv")
 
-def create_dataframes(ano):
-    dir_csv = join(current_dir, 'dados_populacao/populacao_municipio_{}.csv'.format(ano))
-    df = pd.read_csv(dir_csv, encoding='iso-8859-15', sep=';')
+pop_csv = glob.glob(state_pop_files)
+
+def createDataframes(ano):
+    dir_csv = join(current_dir, 'dados_populacao/estados_pop_{}.csv'.format(ano))
+    df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
     return df
 
-def get_dataframe_ano(ano):
-    dataframe = create_dataframes(ano)
-    return dataframe
+def getDataframePopState(ano):
+    return createDataframes(ano)
 
-########################
+
 def getState(state):
     if len(state) == 2:
         return state
@@ -50,6 +49,15 @@ def getStatePopulation(data_frame):
     return data_frame.iloc[50:70]
 
 
+def plotEstado(estado,cor):
+
+    df = (dic_state_population[estado]["state"])
+    df = df.iloc[0][11:16]
+    patch = mpatches.Patch(color=cor, label=estado)
+    df.plot(color=cor)
+    return patch
+
+
 file = pd.ExcelFile(dir)
 lista = file.sheet_names
 sheets = list(map(getState, lista))
@@ -73,18 +81,21 @@ for i in range(0, len(sheets)):
 
 
 
-# df = (dic_state_population["PE"]["state"])
-# df = df.iloc[0][11:16]
-# blue_patch = mpatches.Patch(color='blue', label='PE')
-# df.plot(color='blue')
+
+# handles = []
 #
-# df2 = (dic_state_population["SP"]["state"])
-# df2 = df2.iloc[0][11:16]
-# red_patch = mpatches.Patch(color='red', label='SP')
-# plt.legend(title='Estados', handles=[red_patch, blue_patch])
-# df2.plot(color='red')
+# handles.append(plotEstado('PE','blue'))
+# handles.append(plotEstado('PB', 'red'))
+# handles.append(plotEstado('BA','pink'))
+# handles.append(plotEstado('AL', 'grey'))
+# handles.append(plotEstado('SE', 'green'))
+# handles.append(plotEstado('PI', 'yellow'))
+# handles.append(plotEstado('MA', 'magenta'))
+# handles.append(plotEstado('CE','lime'))
 #
+# plt.legend(title='Estados', handles=handles)
 #
 # plt.xlabel("ano")
 # plt.ylabel("população")
+# plt.savefig("populacao_ano.png")
 # plt.show()
