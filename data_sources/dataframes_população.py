@@ -72,7 +72,7 @@ for i in range(0, len(sheets)):
     dic_state_population[sheets[i]]["state"] = data_frame_population_state[i]
 
 
-
+print(dic_state_population)
 # df = (dic_state_population["PE"]["state"])
 # df = df.iloc[0][11:16]
 # blue_patch = mpatches.Patch(color='blue', label='PE')
