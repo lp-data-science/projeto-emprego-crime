@@ -1,0 +1,1 @@
+- Instalar python[2,3]-xlrd para parsear planilhas
