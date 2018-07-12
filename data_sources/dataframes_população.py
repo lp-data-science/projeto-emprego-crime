@@ -20,6 +20,7 @@ def createDataframes(ano):
     df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
     return df
 
+
 def getDataframePopState(ano):
     return createDataframes(ano)
 
