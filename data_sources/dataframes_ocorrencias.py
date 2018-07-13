@@ -33,54 +33,66 @@ ARQUIVOS = [
     'ocorrenciasmun-brasil2014'
 ]
 
+
 current_dir = getcwd()
 ocorrencias_dir = join(current_dir, "dados_ocorrencias/*.csv")
 estados_dir = join(current_dir, "dados_ocorrencias/estados_shp/BRUFE250GC_SIR.shp")
 files = glob.glob(ocorrencias_dir)
-data_frame_list = {}
-coords = []
 
 
-def fillDataframesOcorrencias(file):
-    global data_frame_list
+def getDataframesOcorrenciasAno(ano):
+    """
+    função que retorna o dataframe das ocorrências de um ano específico
+    :param ano: int
+    :return: dataframe
+    """
+    global files
 
-    f = open(file, 'r', encoding='utf-8')
-
+    file = list(filter(lambda x: x[-8:-4] == str(ano), files))
+    file[0] = file[0].split('/')
+    file_csv = file[0][-2] + '/' + file[0][-1]
+    f = open(file_csv, 'r', encoding='utf-8')
     df = pd.read_csv(f, sep=';')
-
-    file_list = file.split('/')
-    file_name = file_list[7][0:-4]
-    data_frame_list[file_name] = df
-
     f.close()
+    return df
 
-    return data_frame_list
 
-
-def createMap(tupla_crime_uf):
+def getDataframesOcorrenciasCrime(crime, ano):
     """
-    função para retornar os valores totais dos crimes por cada chave
+    função que retorna dados de um crime específico de um determinado ano
+    :param crime: string
+    :param ano: int
+    :return: dataframe
     """
-    global b
-    return b[tupla_crime_uf]
+    df_year = getDataframesOcorrenciasAno(ano)
+    df_crime = df_year.loc[df_year["Tipo_Crime"] == crime]
+    return df_crime
 
 
-def generateHeatMaps(arquivo):
+def getDataframesOcorrenciasEstado(UF, ano):
     """
-    função que plota os gráficos dos crimes entre os anos
-    :param arquivo: Dados de ocorrências
+    função que retorna dados de um estado específico em um determinado ano
+    :param UF: string
+    :param ano: int
+    :return: dataframe
+    """
+    df_year = getDataframesOcorrenciasAno(ano)
+    df_estado = df_year.loc[df_year["Sigla_UF"] == UF]
+    return df_estado
+
+
+def generateHeatMapBrazilOcorrencias(arquivo):
+    """
+    função que plota os gráficos dos crimes anualmente de forma proporcional
+    :param arquivo: string
     :return: void
     """
-    global data_frame_list
     global CRIMES
     global estados_dir
 
     df_pop = getDataframePopState(arquivo[-4:])
-
-    df_ocorrencia = data_frame_list[arquivo]
-
+    df_ocorrencia = getDataframesOcorrenciasAno(arquivo[-4:])
     df_ocorrencia_populacao = df_ocorrencia.join(df_pop.set_index("UF"), on="Sigla_UF").dropna()
-
     df_groupby = df_ocorrencia_populacao.groupby(
         ['Tipo_Crime', 'Sigla_UF', 'CD_GEOCUF', 'populacao'])[
         'PC-Qtde_Ocorrências'].sum().reset_index(name='total')
@@ -102,5 +114,4 @@ def generateHeatMaps(arquivo):
         plt.savefig("graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
 
 
-list(map(fillDataframesOcorrencias, files))
-list(map(generateHeatMaps, ARQUIVOS))
+list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS))
