@@ -10,13 +10,13 @@ import matplotlib.patches as mpatches
 dataframes_population = {} # Todos os dataframes
 
 current_dir = getcwd()
-dir = join(current_dir, "dados_populacao/PROJECOES_2013_POPULACAO.xls")
-state_pop_files = join(current_dir, "dados_populacao/*.csv")
+dir = join(current_dir, "data_sources/dados_populacao/PROJECOES_2013_POPULACAO.xls")
+state_pop_files = join(current_dir, "data_sources/dados_populacao/*.csv")
 
 pop_csv = glob.glob(state_pop_files)
 
 def createDataframes(ano):
-    dir_csv = join(current_dir, 'dados_populacao/estados_pop_{}.csv'.format(ano))
+    dir_csv = join(current_dir, 'data_sources/dados_populacao/estados_pop_{}.csv'.format(ano))
     df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
     return df
 
@@ -45,7 +45,6 @@ def getWomenPopulation(data_frame):
 
 
 def getStatePopulation(data_frame):
-
     data_frame.columns = (data_frame.iloc[49]).tolist()
     return data_frame.iloc[50:70]
 

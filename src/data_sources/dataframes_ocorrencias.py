@@ -1,6 +1,6 @@
 from os import getcwd
 from os.path import join
-from dataframes_população import getDataframePopState
+from src.data_sources.dataframes_população import getDataframePopState
 import glob
 import pandas as pd
 import geopandas as gpd
@@ -35,8 +35,8 @@ ARQUIVOS = [
 
 
 current_dir = getcwd()
-ocorrencias_dir = join(current_dir, "dados_ocorrencias/*.csv")
-estados_dir = join(current_dir, "dados_ocorrencias/estados_shp/BRUFE250GC_SIR.shp")
+ocorrencias_dir = join(current_dir, "data_sources/dados_ocorrencias/*.csv")
+estados_dir = join(current_dir, "data_sources/dados_ocorrencias/estados_shp/BRUFE250GC_SIR.shp")
 files = glob.glob(ocorrencias_dir)
 
 
@@ -114,4 +114,4 @@ def generateHeatMapBrazilOcorrencias(arquivo):
         plt.savefig("graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
 
 
-list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS))
+# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS))
