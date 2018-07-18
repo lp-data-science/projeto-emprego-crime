@@ -12,7 +12,7 @@ empregos_dir = join(current_dir, "dados_empregos/*.txt")
 files_names = glob.glob(empregos_dir)
 data_frame_dict = {}
 
-
+result_key = []
 
 def fillDataFramesEmpregos(file):
     global data_frame_dict
@@ -21,13 +21,13 @@ def fillDataFramesEmpregos(file):
     f = open(file, 'r', encoding='iso-8859-15')
     line = f.readline()
     dict = literal_eval(line)
-    key = dict["nome"]
-
+    key = dict["nome_estendido"][39:]
 
     df = pd.DataFrame(dict["valores"])
     data_frame_dict[key] = df
 
     f.close()
+
 
 
 def getDataFramesEmpregos():
@@ -38,24 +38,45 @@ def getDataFramesEmpregos():
 
 
 
-# data_frames = getDataFramesEmpregos()
+data_frames = getDataFramesEmpregos()
 
 
-# desempregados_medio_completo = data_frames['Número de Admitidos/Desligados por UF, Grau Instrução, Médio Completo - Admitidos/Desligad']
-# desempregados_nono_ano = data_frames['Número de Admitidos/Desligados por UF, Grau Instrução, 6ª a 9ª Fundamental - Admitidos/Des']
-#
-# '''Build Gráfico'''
-# medio_pe = desempregados_medio_completo[desempregados_medio_completo.estado_ibge == 26]
-# medio_pe = medio_pe[['ano', 'valor']]
-# ax = medio_pe.plot(color='blue', x='ano', y='valor')
-# blue_patch = mpatches.Patch(color='blue', label='Ensino médio completo')
-#
-# nono_pe = desempregados_nono_ano[desempregados_medio_completo.estado_ibge == 26]
-# nono_pe = nono_pe[['ano', 'valor']]
-# nono_pe.plot(color = 'red', x ='ano', y = 'valor', ax = ax)
-# red_patch = mpatches.Patch(color='red', label='5 ao 9 ano')
-# plt.legend(title='Estados', handles=[red_patch, blue_patch])
-#
-# plt.xlabel("ano")
-# plt.ylabel("população")
-# plt.show()
+def getKey(dictElement):
+    global result_key
+    key, value = dictElement
+
+    if key[0:10] == 'Setor IBGE' and key[-10:] == ' Desligado':
+         result_key.append(key)
+
+handles = []
+colors = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
+ax = None
+
+def plotByKey(key):
+    global data_frames
+    global ax
+    global handles
+    global colors
+
+    data_frame = data_frames[key]
+    setor = key[11:].split('-')
+    setor = setor[0]
+    data_frame = data_frame[data_frame.estado_ibge == 26]
+    color = colors.pop(0)
+    if ax == None:
+        ax = data_frame.plot(color=color, x='ano', y='valor')
+    else:
+        ax = data_frame.plot(color=color, x='ano', y='valor', ax=ax)
+
+    patch = mpatches.Patch(color=color, label=setor)
+    handles.append(patch)
+
+
+list(map(getKey, data_frames.items()))
+
+list(map(plotByKey, result_key))
+
+plt.legend(title='Setor', handles=handles)
+plt.xlabel("ano")
+plt.ylabel("população")
+plt.show()
