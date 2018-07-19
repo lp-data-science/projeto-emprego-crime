@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 current_dir = getcwd()
-empregos_dir = join(current_dir, "dados_empregos/*.txt")
+empregos_dir = join(current_dir, "data_sources/dados_empregos/*.txt")
 
 files_names = glob.glob(empregos_dir)
 data_frame_dict = {}
@@ -36,7 +36,6 @@ def getDataFramesEmpregos():
     global data_frame_dict
     list(map(fillDataFramesEmpregos, files_names))
     return data_frame_dict
-
 
 
 data_frames = getDataFramesEmpregos()
