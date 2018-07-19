@@ -1,37 +1,13 @@
 from os import getcwd
 from os.path import join
 from src.data_sources.dataframes_população import getDataframePopState
+from src.utils.utils import ARQUIVOS_OCORRENCIAS, CRIMES, ANOS
 import glob
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 
 plt.style.use('bmh')
-
-CRIMES = [
-    'Roubo seguido de morte (latrocínio)',
-    'Roubo de veículo',
-    'Lesão corporal seguida de morte',
-    'Homicídio doloso',
-    'Furto de veículo',
-    'Estupro'
-]
-
-ANOS = [
-    '2010',
-    '2011',
-    '2012',
-    '2013',
-    '2014'
-]
-
-ARQUIVOS = [
-    'ocorrenciasmun-brasil2010',
-    'ocorrenciasmun-brasil2011',
-    'ocorrenciasmun-brasil2012',
-    'ocorrenciasmun-brasil2013',
-    'ocorrenciasmun-brasil2014'
-]
 
 
 current_dir = getcwd()
@@ -50,7 +26,7 @@ def getDataframesOcorrenciasAno(ano):
 
     file = list(filter(lambda x: x[-8:-4] == str(ano), files))
     file[0] = file[0].split('/')
-    file_csv = file[0][-2] + '/' + file[0][-1]
+    file_csv = file[0][-3] + '/' + file[0][-2] + '/' + file[0][-1]
     f = open(file_csv, 'r', encoding='utf-8')
     df = pd.read_csv(f, sep=';')
     f.close()
@@ -87,7 +63,6 @@ def generateHeatMapBrazilOcorrencias(arquivo):
     :param arquivo: string
     :return: void
     """
-    global CRIMES
     global estados_dir
 
     df_pop = getDataframePopState(arquivo[-4:])
@@ -111,7 +86,4 @@ def generateHeatMapBrazilOcorrencias(arquivo):
 
         geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
         plt.title("Proporcao Crimes X Populacao")
-        plt.savefig("graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
-
-
-# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS))
+        plt.savefig("data_sources/graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
