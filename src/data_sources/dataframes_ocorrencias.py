@@ -23,14 +23,23 @@ def getDataframesOcorrenciasAno(ano):
     :return: dataframe
     """
     global files
+    global estados_dir
 
+    df_pop = getDataframePopState(ano)
     file = list(filter(lambda x: x[-8:-4] == str(ano), files))
     file[0] = file[0].split('/')
     file_csv = file[0][-3] + '/' + file[0][-2] + '/' + file[0][-1]
     f = open(file_csv, 'r', encoding='utf-8')
     df = pd.read_csv(f, sep=';')
+    df_crime_cod_uf = df.join(df_pop.set_index("UF"), on="Sigla_UF").dropna()
     f.close()
-    return df
+    return df_crime_cod_uf
+
+
+def getDataframesTotalOcorrencias():
+    df = list(map(getDataframesOcorrenciasAno, ANOS))
+    df_conc = pd.concat(df, ignore_index=True, sort=True)
+    return df_conc
 
 
 def getDataframesOcorrenciasCrime(crime, ano):
@@ -40,8 +49,11 @@ def getDataframesOcorrenciasCrime(crime, ano):
     :param ano: int
     :return: dataframe
     """
+    global estados_dir
+
     df_year = getDataframesOcorrenciasAno(ano)
     df_crime = df_year.loc[df_year["Tipo_Crime"] == crime]
+
     return df_crime
 
 

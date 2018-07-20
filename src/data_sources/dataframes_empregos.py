@@ -52,11 +52,6 @@ def getKey(dictElement):
         result_keySexo.append(key)
 
 
-
-
-
-
-
 handlesIBGE = []
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
@@ -106,20 +101,14 @@ def plotDesempregoGeral():
 
 
 
-list(map(getKey, data_frames.items()))
-list(map(getDataframesBySexo, result_keySexo))
-plotDesempregoGeral()
-
-list(map(plotByKeySetorIBGE, result_keyIBGE))
-
-
-
-
-
-
-
-
-plt.legend(title='Setor', handles=handlesIBGE)
-plt.xlabel("ano")
-plt.ylabel("população")
-plt.show()
+# list(map(getKey, data_frames.items()))
+# list(map(getDataframesBySexo, result_keySexo))
+# plotDesempregoGeral()
+#
+# list(map(plotByKeySetorIBGE, result_keyIBGE))
+#
+#
+# plt.legend(title='Setor', handles=handlesIBGE)
+# plt.xlabel("ano")
+# plt.ylabel("população")
+# plt.show()
