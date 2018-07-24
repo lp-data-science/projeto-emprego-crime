@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
+from src.utils.utils import ANOS
+
 dataframes_population = {} # Todos os dataframes
 
 current_dir = getcwd()
@@ -18,11 +20,25 @@ pop_csv = glob.glob(state_pop_files)
 def createDataframes(ano):
     dir_csv = join(current_dir, 'data_sources/dados_populacao/estados_pop_{}.csv'.format(ano))
     df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
+    # df_size = len(df)
+    # df.loc[:, 'ano'] = pd.Series([ano] * df_size)
+    return df
+
+
+def createDataframes2(ano):
+    dir_csv = join(current_dir, 'data_sources/dados_populacao/estados_pop_{}.csv'.format(ano))
+    df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
+    df_size = len(df)
+    df.loc[:, 'ano'] = pd.Series([int(ano)] * df_size)
     return df
 
 
 def getDataframePopState(ano):
     return createDataframes(ano)
+
+
+def getDataframePopState2(ano):
+    return createDataframes2(ano)
 
 
 def getState(state):
