@@ -85,16 +85,16 @@ def generateHeatMapBrazilOcorrencias(arquivo):
     df_ocorrencia = getDataframesOcorrenciasAno(arquivo[-4:])
     df_ocorrencia_populacao = df_ocorrencia.join(df_pop.set_index("UF"), on="Sigla_UF").dropna()
     df_groupby = df_ocorrencia_populacao.groupby(
-        ['Tipo_Crime', 'Sigla_UF', 'CD_GEOCUF', 'populacao'])[
+        ['Tipo_Crime', 'Sigla_UF', 'estado_ibge', 'populacao'])[
         'PC-Qtde_Ocorrências'].sum().reset_index(name='total')
 
     for crime in CRIMES:
         brazil_shape = gpd.read_file(estados_dir)
         df_brazil_shape = pd.DataFrame(brazil_shape)
-        df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
+        df_brazil_shape["estado_ibge"] = df_brazil_shape["estado_ibge"].apply(int)
 
-        df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("CD_GEOCUF"),
-                                                on="CD_GEOCUF")
+        df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"),
+                                                on="estado_ibge")
 
         df_join_groupby_shape["proporcao"] = (df_join_groupby_shape.total / df_join_groupby_shape.populacao) * 1000
 
