@@ -27,12 +27,16 @@ def getDataframesOcorrenciasAno(ano):
 
     df_pop = getDataframePopState(ano)
     file = list(filter(lambda x: x[-8:-4] == str(ano), files))
+
     file[0] = file[0].split('/')
+
     file_csv = file[0][-3] + '/' + file[0][-2] + '/' + file[0][-1]
+
     f = open(file_csv, 'r', encoding='utf-8')
     df = pd.read_csv(f, sep=';')
     df_crime_cod_uf = df.join(df_pop.set_index("UF"), on="Sigla_UF").dropna()
     f.close()
+
     return df_crime_cod_uf
 
 

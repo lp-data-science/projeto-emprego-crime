@@ -2,26 +2,34 @@ import pandas as pd
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos
 from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorrencias, getDataframesOcorrenciasCrime, \
     getDataframesTotalOcorrencias
-from src.data_sources.dataframes_população import getDataframePopState, getDataframePopState2
+from src.data_sources.dataframes_população import getDataframePopState
 from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS
 import matplotlib.pyplot as plt
 
 
 
 
-dfs_populacao = list(map(getDataframePopState2, ANOS))
+dfs_populacao = list(map(getDataframePopState, ANOS))
 
 df_pop = pd.concat(dfs_populacao)
 
 df_empregos = getDataFramesEmpregos()
 df_ocorrencias = getDataframesTotalOcorrencias()
 
+
+
+
+
 df_ocorrencias['ano_ocorrencia'] = df_ocorrencias.Mês_Ano.str[3:]
 
-df_ocorrencias_group = df_ocorrencias.groupby(['CD_GEOCUF', 'Tipo_Crime', 'ano_ocorrencia'])['PC-Qtde_Ocorrências'].sum()
 
-df_join_empregos_ocorrencias = df_ocorrencias.join(df_empregos['Setor IBGE, Comércio - Admitidos/Desligados, Desligado']. set_index('estado_ibge'),
-                                                   on='CD_GEOCUF')
+df_ocorrencias_group = df_ocorrencias.groupby(['estado_ibge', 'Tipo_Crime', 'ano_ocorrencia'])['PC-Qtde_Ocorrências'].sum()
+
+
+df_join_empregos_ocorrencias = pd.merge(df_empregos['Setor IBGE, Comércio - Admitidos/Desligados, Desligado'],
+                                                   df_ocorrencias,
+                                                   on=['estado_ibge', 'ano'],
+                                                   how='inner')
 
 
 df_groupby = df_join_empregos_ocorrencias.groupby(['UF', 'Tipo_Crime', df_join_empregos_ocorrencias['ano_ocorrencia'], 'populacao'])[
@@ -34,10 +42,10 @@ df_groupby2 = df_join_empregos_ocorrencias.groupby(['UF', df_join_empregos_ocorr
         'valor'].sum().reset_index(name='desempregados')
 
 
-df_empregos['Setor IBGE, Comércio - Admitidos/Desligados, Desligado'].rename(columns={'estado_ibge': 'CD_GEOCUF'}, inplace=True)
+
 df_merge = pd.merge(df_empregos['Setor IBGE, Comércio - Admitidos/Desligados, Desligado'],
                     df_pop,
-                    on=['CD_GEOCUF', 'ano'])
+                    on=['estado_ibge', 'ano'])
 
 df_groupby2['prop_desempregados'] = df_groupby2['desempregados'] / df_groupby2['populacao']
 df_groupby['prop_ocorrencias'] = df_groupby['ocorrencias'] / df_groupby['populacao']
