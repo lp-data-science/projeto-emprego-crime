@@ -58,6 +58,7 @@ CATEGORIAS_EMPREGOS = [
     'Sexo, Masculino - Admitidos/Desligados, Desligado'
 ]
 
+
 ESTADOS_SIGLAS = {
     'AC': 'Acre',
     'AL': 'Alagoas',

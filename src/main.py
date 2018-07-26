@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos
 from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorrencias, getDataframesOcorrenciasCrime, \
@@ -5,7 +7,11 @@ from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorren
 from src.data_sources.dataframes_população import getDataframePopState
 from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS, ESTADOS_SIGLAS
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
+
+colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
+axIBGE = None
 
 """
 Dataframes base
@@ -21,11 +27,11 @@ dfs_empregos = getDataFramesEmpregos()
 dfs_ocorrencias = getDataframesTotalOcorrencias()
 dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
 
-def teste(setor):
-    # global df_populacao
-    # global dfs_empregos
-    # global dfs_ocorrencias
 
+"""
+Plot
+"""
+def plotEmpregosOcorrencias(setor):
     df_join_empregos_ocorrencias = pd.merge(dfs_empregos[setor],
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
@@ -43,22 +49,38 @@ def teste(setor):
 
     df_merge['prop_desempregados'] = df_merge['valor'] / df_merge['populacao']
 
+    setor_sem_barra = setor.replace("/", "_")
+    os.makedirs(f'graficos/{setor_sem_barra}')
+
     for key, value in ESTADOS_SIGLAS.items():
         for crime in CRIMES:
+            handlesIBGE = []
+
             df1 = df_groupby_empregos_ocorrencias.loc[(df_groupby_empregos_ocorrencias.UF == value) &
                                                       (df_groupby_empregos_ocorrencias.Tipo_Crime == crime)]
             df2 = df_merge.loc[(df_merge.UF == key)]
 
             x = df1['ano_ocorrencia']
-            y = df1['prop_ocorrencias']
-            y2 = df2['prop_desempregados']
+            y = df1['prop_ocorrencias'] * 100
+            y2 = df2['prop_desempregados'] * 100
 
             if len(x) != len(y2):
-                print("erro")
+                print(f'Dados inconsistentes de {value} para o crime {crime}')
             else:
-                plt.plot(x, y)
-                plt.plot(x, y2)
-                plt.savefig(f'graficos/{value}_{crime}')
+                plt.plot(x, y, color='mediumblue')
+                plt.plot(x, y2, color='lime')
+
+                patch1 = mpatches.Patch(color='mediumblue', label='Ocorrências')
+                patch2 = mpatches.Patch(color='lime', label='Desempregados')
+
+                handlesIBGE.append(patch1)
+                handlesIBGE.append(patch2)
+
+                plt.legend(title='Taxas', handles=handlesIBGE)
+
+                plt.xlabel("Ano")
+                plt.ylabel("Proporção relacionada ao total de habitantes em %")
+                plt.savefig(f'graficos/{setor_sem_barra}/{value}_{crime}')
             plt.gcf().clear()
 
-teste('Setor IBGE, Administração Pública - Admitidos/Desligados, Desligado')
+list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
