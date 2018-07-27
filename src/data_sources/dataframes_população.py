@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from src.utils.utils import ANOS
+from src.utils.utils import ANOS, REGIOES
 
 dataframes_population = {} # Todos os dataframes
 
@@ -61,20 +61,28 @@ def plotEstado(estado,cor):
     df.plot(color=cor)
     return patch
 
+def getRegion(region):
+    if region in REGIOES:
+        return region
 
 file = pd.ExcelFile(dir)
 lista = file.sheet_names
 sheets = list(map(getState, lista))
 sheets = list(filter(lambda a: a != None, sheets))
 
+region_list = list(map(getRegion, lista))
+region_list = list(filter(lambda a: a != None, region_list))
+
 dfs = [getDataframe(file=file, state=x) for x in sheets]
 
+dfs_regioes = [getDataframe(file=file, state=region) for region in region_list]
 
 data_frame_population_men = list(map(getMenPopulation, dfs))
 data_frame_population_women = list(map(getWomenPopulation, dfs))
 data_frame_population_state = list(map(getStatePopulation, dfs))
 
 dic_state_population = {}
+
 for i in sheets:
     dic_state_population[i] = {}
 
@@ -84,7 +92,8 @@ for i in range(0, len(sheets)):
     dic_state_population[sheets[i]]["state"] = data_frame_population_state[i]
 
 
-
+def getDataframeRegions():
+    return dfs_regioes
 
 # handles = []
 #
