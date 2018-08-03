@@ -1,0 +1,161 @@
+,Tipo_Crime,UF,ocorrencias
+0,Estupro,Acre,3.0
+1,Estupro,Alagoas,2153.0
+2,Estupro,Amapá,1465.0
+3,Estupro,Amazonas,5713.0
+4,Estupro,Bahia,10596.0
+5,Estupro,Ceará,5704.0
+6,Estupro,Distrito Federal,3829.0
+7,Estupro,Espírito Santo,3142.0
+8,Estupro,Goiás,4305.0
+9,Estupro,Maranhão,4797.0
+10,Estupro,Mato Grosso,5952.0
+11,Estupro,Mato Grosso do Sul,5502.0
+12,Estupro,Minas Gerais,6936.0
+13,Estupro,Paraná,17280.0
+14,Estupro,Paraíba,1531.0
+15,Estupro,Pará,6983.0
+16,Estupro,Pernambuco,5693.943
+17,Estupro,Piauí,1870.0
+18,Estupro,Rio Grande do Norte,1412.0
+19,Estupro,Rio Grande do Sul,19447.0
+20,Estupro,Rio de Janeiro,25907.0
+21,Estupro,Rondônia,3922.0
+22,Estupro,Roraima,1414.0
+23,Estupro,Santa Catarina,10621.0
+24,Estupro,Sergipe,1966.0
+25,Estupro,São Paulo,48628.0
+26,Estupro,Tocantins,1950.0
+27,Furto de veículo,Acre,16.0
+28,Furto de veículo,Alagoas,2730.0
+29,Furto de veículo,Amapá,2019.0
+30,Furto de veículo,Amazonas,9032.0
+31,Furto de veículo,Bahia,22649.0
+32,Furto de veículo,Ceará,15755.0
+33,Furto de veículo,Distrito Federal,33616.0
+34,Furto de veículo,Espírito Santo,16258.426
+35,Furto de veículo,Goiás,12511.0
+36,Furto de veículo,Maranhão,6341.0
+37,Furto de veículo,Mato Grosso,15703.0
+38,Furto de veículo,Mato Grosso do Sul,6410.0
+39,Furto de veículo,Minas Gerais,60449.172999999995
+40,Furto de veículo,Paraná,31822.0
+41,Furto de veículo,Paraíba,1658.0
+42,Furto de veículo,Pará,4807.0
+43,Furto de veículo,Pernambuco,8298.996
+44,Furto de veículo,Piauí,4616.0
+45,Furto de veículo,Rio Grande do Norte,3366.0
+46,Furto de veículo,Rio Grande do Sul,80428.0
+47,Furto de veículo,Rio de Janeiro,85960.0
+48,Furto de veículo,Rondônia,9861.0
+49,Furto de veículo,Roraima,3108.0
+50,Furto de veículo,Santa Catarina,51518.0
+51,Furto de veículo,Sergipe,3379.0
+52,Furto de veículo,São Paulo,280915.2850000001
+53,Furto de veículo,Tocantins,5427.0
+54,Homicídio doloso,Acre,324.0
+55,Homicídio doloso,Alagoas,10297.0
+56,Homicídio doloso,Amapá,697.0
+57,Homicídio doloso,Amazonas,5008.0
+58,Homicídio doloso,Bahia,26124.0
+59,Homicídio doloso,Ceará,16969.0
+60,Homicídio doloso,Distrito Federal,3519.0
+61,Homicídio doloso,Espírito Santo,8312.0
+62,Homicídio doloso,Goiás,4684.0
+63,Homicídio doloso,Maranhão,7192.0
+64,Homicídio doloso,Mato Grosso,5025.0
+65,Homicídio doloso,Mato Grosso do Sul,2163.0
+66,Homicídio doloso,Minas Gerais,18485.0
+67,Homicídio doloso,Paraná,8790.0
+68,Homicídio doloso,Paraíba,7460.0
+69,Homicídio doloso,Pará,12245.0
+70,Homicídio doloso,Pernambuco,9350.063
+71,Homicídio doloso,Piauí,2220.0
+72,Homicídio doloso,Rio Grande do Norte,2892.0
+73,Homicídio doloso,Rio Grande do Sul,9428.0
+74,Homicídio doloso,Rio de Janeiro,21320.0
+75,Homicídio doloso,Rondônia,2383.0
+76,Homicídio doloso,Roraima,369.0
+77,Homicídio doloso,Santa Catarina,2926.0
+78,Homicídio doloso,Sergipe,3982.0
+79,Homicídio doloso,São Paulo,19288.0
+80,Homicídio doloso,Tocantins,1407.0
+81,Lesão corporal seguida de morte,Acre,2.0
+82,Lesão corporal seguida de morte,Alagoas,90.0
+83,Lesão corporal seguida de morte,Amapá,15.0
+84,Lesão corporal seguida de morte,Amazonas,117.0
+85,Lesão corporal seguida de morte,Bahia,758.0
+86,Lesão corporal seguida de morte,Ceará,334.0
+87,Lesão corporal seguida de morte,Distrito Federal,84.0
+88,Lesão corporal seguida de morte,Espírito Santo,78.0
+89,Lesão corporal seguida de morte,Goiás,26.0
+90,Lesão corporal seguida de morte,Maranhão,579.0
+91,Lesão corporal seguida de morte,Mato Grosso,209.0
+92,Lesão corporal seguida de morte,Mato Grosso do Sul,46.0
+93,Lesão corporal seguida de morte,Minas Gerais,306.0
+94,Lesão corporal seguida de morte,Paraná,519.0
+95,Lesão corporal seguida de morte,Paraíba,25.0
+96,Lesão corporal seguida de morte,Pará,449.0
+97,Lesão corporal seguida de morte,Pernambuco,270.0
+98,Lesão corporal seguida de morte,Piauí,53.0
+99,Lesão corporal seguida de morte,Rio Grande do Norte,325.0
+100,Lesão corporal seguida de morte,Rio Grande do Sul,312.0
+101,Lesão corporal seguida de morte,Rio de Janeiro,182.0
+102,Lesão corporal seguida de morte,Rondônia,30.0
+103,Lesão corporal seguida de morte,Roraima,15.0
+104,Lesão corporal seguida de morte,Santa Catarina,391.0
+105,Lesão corporal seguida de morte,Sergipe,45.0
+106,Lesão corporal seguida de morte,Tocantins,29.0
+107,Roubo de veículo,Alagoas,10817.0
+108,Roubo de veículo,Amapá,629.0
+109,Roubo de veículo,Amazonas,19922.0
+110,Roubo de veículo,Bahia,57149.0
+111,Roubo de veículo,Ceará,22806.0
+112,Roubo de veículo,Distrito Federal,20996.0
+113,Roubo de veículo,Espírito Santo,11862.586
+114,Roubo de veículo,Goiás,14063.0
+115,Roubo de veículo,Maranhão,8447.0
+116,Roubo de veículo,Mato Grosso,14338.0
+117,Roubo de veículo,Mato Grosso do Sul,2217.0
+118,Roubo de veículo,Minas Gerais,16293.0
+119,Roubo de veículo,Paraná,16167.0
+120,Roubo de veículo,Paraíba,2240.0
+121,Roubo de veículo,Pará,10275.0
+122,Roubo de veículo,Pernambuco,19511.972
+123,Roubo de veículo,Piauí,6901.0
+124,Roubo de veículo,Rio Grande do Norte,7832.0
+125,Roubo de veículo,Rio Grande do Sul,59074.0
+126,Roubo de veículo,Rio de Janeiro,93186.38600000003
+127,Roubo de veículo,Rondônia,4379.0
+128,Roubo de veículo,Roraima,632.0
+129,Roubo de veículo,Santa Catarina,9152.0
+130,Roubo de veículo,Sergipe,5943.0
+131,Roubo de veículo,São Paulo,190315.21700000003
+132,Roubo de veículo,Tocantins,1174.0
+133,Roubo seguido de morte (latrocínio),Acre,20.0
+134,Roubo seguido de morte (latrocínio),Alagoas,278.0
+135,Roubo seguido de morte (latrocínio),Amapá,30.0
+136,Roubo seguido de morte (latrocínio),Amazonas,215.0
+137,Roubo seguido de morte (latrocínio),Bahia,761.0
+138,Roubo seguido de morte (latrocínio),Ceará,406.0
+139,Roubo seguido de morte (latrocínio),Distrito Federal,302.0
+140,Roubo seguido de morte (latrocínio),Espírito Santo,133.0
+141,Roubo seguido de morte (latrocínio),Goiás,175.0
+142,Roubo seguido de morte (latrocínio),Maranhão,314.0
+143,Roubo seguido de morte (latrocínio),Mato Grosso,229.0
+144,Roubo seguido de morte (latrocínio),Mato Grosso do Sul,78.0
+145,Roubo seguido de morte (latrocínio),Minas Gerais,432.0
+146,Roubo seguido de morte (latrocínio),Paraná,259.0
+147,Roubo seguido de morte (latrocínio),Paraíba,104.0
+148,Roubo seguido de morte (latrocínio),Pará,628.0
+149,Roubo seguido de morte (latrocínio),Pernambuco,357.0
+150,Roubo seguido de morte (latrocínio),Piauí,87.0
+151,Roubo seguido de morte (latrocínio),Rio Grande do Norte,53.0
+152,Roubo seguido de morte (latrocínio),Rio Grande do Sul,492.0
+153,Roubo seguido de morte (latrocínio),Rio de Janeiro,689.0
+154,Roubo seguido de morte (latrocínio),Rondônia,84.0
+155,Roubo seguido de morte (latrocínio),Roraima,13.0
+156,Roubo seguido de morte (latrocínio),Santa Catarina,193.0
+157,Roubo seguido de morte (latrocínio),Sergipe,166.0
+158,Roubo seguido de morte (latrocínio),São Paulo,1487.0
+159,Roubo seguido de morte (latrocínio),Tocantins,63.0

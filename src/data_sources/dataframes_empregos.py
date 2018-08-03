@@ -15,27 +15,25 @@ data_frame_dict = {}
 result_keyIBGE = []
 result_keySexo = []
 
-def fillDataFramesEmpregos(file):
-    global data_frame_dict
-    global file_names
 
+# mapear uma funcao de gerar dataframe em cima de files_names
+
+def fillDataFramesEmpregos(file):
+    data_frame_dict = {}
     f = open(file, 'r', encoding='iso-8859-15')
     line = f.readline()
     dict = literal_eval(line)
     key = dict["nome_estendido"][39:]
-
     df = pd.DataFrame(dict["valores"])
     data_frame_dict[key] = df
-
     f.close()
 
+    return data_frame_dict
 
 
 def getDataFramesEmpregos():
     global files_names
-    global data_frame_dict
-    list(map(fillDataFramesEmpregos, files_names))
-    return data_frame_dict
+    return list(map(fillDataFramesEmpregos, files_names))
 
 
 data_frames = getDataFramesEmpregos()
@@ -77,38 +75,24 @@ def plotByKeySetorIBGE(key):
     handlesIBGE.append(patch)
 
 
-listDataframeSexo = []
+# listDataframeSexo = []
 
-def getDataframesBySexo(key):
-    global data_frames
-    global axSexo
-    global handlesSexo
-    global colorsSexo
-
-    data_frame = data_frames[key]
-    listDataframeSexo.append(data_frame)
-
-
-def plotDesempregoGeral():
-    data_frame1 = listDataframeSexo[0]
-    data_frame2 = listDataframeSexo[1]
-
-    geral = pd.DataFrame({'ano': data_frame1.ano, 'estado_ibge': data_frame1.estado_ibge,
-                          'valor': data_frame1.valor + data_frame2.valor})
-    data_frame = geral[geral.estado_ibge == 26]
-
-    data_frame.plot(color='red', x='ano', y='valor')
-
-
-
-# list(map(getKey, data_frames.items()))
-# list(map(getDataframesBySexo, result_keySexo))
-# plotDesempregoGeral()
-#
-# list(map(plotByKeySetorIBGE, result_keyIBGE))
+# def getDataframesBySexo(key):
+#     global data_frames
+#     global axSexo
+#     global handlesSexo
+#     global colorsSexo
+#     df_emprego = [d[key] for d in data_frames if key in d]
+#     data_frame = df_emprego[0]
+#     listDataframeSexo.append(data_frame)
 #
 #
-# plt.legend(title='Setor', handles=handlesIBGE)
-# plt.xlabel("ano")
-# plt.ylabel("população")
-# plt.show()
+# def plotDesempregoGeral():
+#     data_frame1 = listDataframeSexo[0]
+#     data_frame2 = listDataframeSexo[1]
+#
+#     geral = pd.DataFrame({'ano': data_frame1.ano, 'estado_ibge': data_frame1.estado_ibge,
+#                           'valor': data_frame1.valor + data_frame2.valor})
+#     data_frame = geral[geral.estado_ibge == 26]
+#
+#     data_frame.plot(color='red', x='ano', y='valor')

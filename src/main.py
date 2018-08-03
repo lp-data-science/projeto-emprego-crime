@@ -1,6 +1,9 @@
+import glob
 import os
-
+from os.path import join
 import pandas as pd
+
+from src.data_sources.dataframes_crimes_desempregos import getDesligadosUF, getOcorrenciasByCrime, getPopulacao
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos
 from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorrencias, getDataframesOcorrenciasCrime, \
     getDataframesTotalOcorrencias
@@ -85,33 +88,44 @@ def plotTaxaDesempregoFaixaEtaria(categorias):
 
 
 def plotEmpregosOcorrencias(setor):
-    df_join_empregos_ocorrencias = pd.merge(dfs_empregos[setor],
+    global dfs_empregos
+
+    df_emprego = [d[setor] for d in dfs_empregos if setor in d]
+    df_join_empregos_ocorrencias = pd.merge(df_emprego[0],
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
                                             how='inner')
+    # df_join_empregos_ocorrencias = pd.merge(dfs_empregos[setor],
+    #                                         dfs_ocorrencias,
+    #                                         on=['estado_ibge', 'ano'],
+    #                                         how='inner')
 
     df_groupby_empregos_ocorrencias = df_join_empregos_ocorrencias.groupby(
         ['UF', 'Tipo_Crime', df_join_empregos_ocorrencias['ano_ocorrencia'], 'populacao'])[
         'PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
 
-    df_merge = pd.merge(dfs_empregos[setor],
+    df_merge = pd.merge(df_emprego[0],
                         df_populacao,
                         on=['estado_ibge', 'ano'])
+    # df_merge = pd.merge(dfs_empregos[setor],
+    #                     df_populacao,
+    #                     on=['estado_ibge', 'ano'])
 
     df_groupby_empregos_ocorrencias['prop_ocorrencias'] = df_groupby_empregos_ocorrencias['ocorrencias'] / df_groupby_empregos_ocorrencias['populacao']
 
     df_merge['prop_desempregados'] = df_merge['valor'] / df_merge['populacao']
 
     setor_sem_barra = setor.replace("/", "_")
-    os.makedirs(f'graficos/{setor_sem_barra}')
+    # os.makedirs(f'graficos/{setor_sem_barra}')
 
+    # TODO - Retirar os fors
     for key, value in ESTADOS_SIGLAS.items():
         for crime in CRIMES:
             handlesIBGE = []
 
             df1 = df_groupby_empregos_ocorrencias.loc[(df_groupby_empregos_ocorrencias.UF == value) &
                                                       (df_groupby_empregos_ocorrencias.Tipo_Crime == crime)]
-            df2 = df_merge.loc[(df_merge.UF == key)]
+            df2 = df_merge.loc[(df_merge.Sigla_UF == key)]
 
             x = df1['ano_ocorrencia']
             y = df1['prop_ocorrencias'] * 100
@@ -137,9 +151,14 @@ def plotEmpregosOcorrencias(setor):
             plt.gcf().clear()
 
 
-# list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
+list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
 # mulheres = total é posicao 24, homens = total é posicao 1
 # list(map(createDataframePopulacaoRegiao, lista_dfs_regioes_populacao))
 # plotTaxaDesemprego(CATEGORIAS_EMPREGOS[2:9])
-list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
+# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
+# print(getDesligadosUF())
+# print(getOcorrenciasByCrime())
+# print(getPopulacao())
+
+#d for d in exampleSet if d['type'] in keyValList
