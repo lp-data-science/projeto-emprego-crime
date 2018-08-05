@@ -39,7 +39,7 @@ dfs_ocorrencias = getDataframesTotalOcorrencias()
 dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
 
 #Dataframe principal
-df_result = pd.read_csv("data_sources/df_result.csv")
+df_result = pd.read_csv("data_sources/dados_crimes_desemprego/df_result.csv")
 
 
 """
