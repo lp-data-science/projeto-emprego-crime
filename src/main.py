@@ -2,13 +2,15 @@ import glob
 import os
 from os.path import join
 import pandas as pd
+import numpy as np
 
 from src.data_sources.dataframes_crimes_desempregos import getDesligadosUF, getOcorrenciasByCrime, getPopulacao
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos
 from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorrencias, getDataframesOcorrenciasCrime, \
     getDataframesTotalOcorrencias
 from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
-from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS, ESTADOS_SIGLAS, REGIOES
+from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS, ESTADOS_SIGLAS, REGIOES, \
+    getUFSigla, SIGLAS_UF
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -16,9 +18,12 @@ import matplotlib.patches as mpatches
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
 
+
 """
 Dataframes base
 """
+
+
 # Dataframe de população
 dfs_populacao = list(map(getDataframePopState, ANOS))
 df_populacao = pd.concat(dfs_populacao)
@@ -32,6 +37,9 @@ dfs_empregos = getDataFramesEmpregos()
 # Dataframe de ocorrências
 dfs_ocorrencias = getDataframesTotalOcorrencias()
 dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
+
+#Dataframe principal
+df_result = pd.read_csv("data_sources/df_result.csv")
 
 
 """
@@ -67,6 +75,11 @@ def createDataframePopulacaoRegiaoGenero(dataframe):
     plt.savefig(f'graficos/populacao/genero/{region_name}.png')
     plt.gcf().clear()
 
+
+def calculateCorrelationCrimeDesempregoByState(UF):
+    df = df_result.loc[df_result.Sigla_UF == UF]
+    correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
+    print(f'{UF}: {correlation}')
 
 """
 Plot
@@ -151,7 +164,36 @@ def plotEmpregosOcorrencias(setor):
             plt.gcf().clear()
 
 
-list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
+"""
+Main
+"""
+
+print(df_result.columns.values)
+df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
+l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
+
+df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
+
+
+for UF in SIGLAS_UF:
+    for crime in CRIMES:
+        df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
+        correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
+        df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
+
+corr = pd.DataFrame()
+
+for index, row in df_teste1.iterrows():
+    corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
+
+print(corr)
+
+plt.pcolor(corr)
+plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index)
+plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns)
+plt.savefig("graficos/correlacao_por_crime_estado.png")
+
+# list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
 # mulheres = total é posicao 24, homens = total é posicao 1
 # list(map(createDataframePopulacaoRegiao, lista_dfs_regioes_populacao))
@@ -160,5 +202,3 @@ list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 # print(getDesligadosUF())
 # print(getOcorrenciasByCrime())
 # print(getPopulacao())
-
-#d for d in exampleSet if d['type'] in keyValList

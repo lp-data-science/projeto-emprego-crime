@@ -1,3 +1,14 @@
+"""
+FUNÇÕES AUXILIARES
+"""
+def getUFSigla(tuple_uf_state):
+    return tuple_uf_state[0]
+
+
+"""
+ENUMS
+"""
+
 CRIMES = [
     'Roubo seguido de morte (latrocínio)',
     'Roubo de veículo',
@@ -97,3 +108,5 @@ ESTADOS_SIGLAS = {
     'SP': 'São Paulo',
     'TO': 'Tocantins'
 }
+
+SIGLAS_UF = list(map(getUFSigla, ESTADOS_SIGLAS.items()))

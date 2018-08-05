@@ -10,10 +10,10 @@ import functools
 plt.style.use('bmh')
 
 
-current_dir = getcwd()
-ocorrencias_dir = join(current_dir, "data_sources/dados_ocorrencias/*.csv")
-estados_dir = join(current_dir, "data_sources/dados_ocorrencias/estados_shp/BRUFE250GC_SIR.shp")
-files = glob.glob(ocorrencias_dir)
+CURRENT_DIR = getcwd()
+OCORRENCIAS_DIR = join(CURRENT_DIR, "data_sources/dados_ocorrencias/*.csv")
+ESTADOS_DIR = join(CURRENT_DIR, "data_sources/dados_ocorrencias/estados_shp/BRUFE250GC_SIR.shp")
+FILES_NAMES = glob.glob(OCORRENCIAS_DIR)
 
 
 def getDataframesOcorrenciasAno(ano):
@@ -22,11 +22,11 @@ def getDataframesOcorrenciasAno(ano):
     :param ano: int
     :return: dataframe
     """
-    global files
-    global estados_dir
+    global FILES_NAMES
+    global ESTADOS_DIR
 
     df_pop = getDataframePopState(ano)
-    file = list(filter(lambda x: x[-8:-4] == str(ano), files))
+    file = list(filter(lambda x: x[-8:-4] == str(ano), FILES_NAMES))
 
     file[0] = file[0].split('/')
 
@@ -53,7 +53,7 @@ def getDataframesOcorrenciasCrime(crime, ano):
     :param ano: int
     :return: dataframe
     """
-    global estados_dir
+    global ESTADOS_DIR
 
     df_year = getDataframesOcorrenciasAno(ano)
     df_crime = df_year.loc[df_year["Tipo_Crime"] == crime]
@@ -75,7 +75,7 @@ def getDataframesOcorrenciasEstado(UF, ano):
 
 def plotEstadoHeatMap(arquivo,df_groupby, crime):
 
-    brazil_shape = gpd.read_file(estados_dir)
+    brazil_shape = gpd.read_file(ESTADOS_DIR)
     df_brazil_shape = pd.DataFrame(brazil_shape)
     df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
 
@@ -90,7 +90,8 @@ def plotEstadoHeatMap(arquivo,df_groupby, crime):
 
     geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
     plt.title("Proporcao Crimes X Populacao")
-    plt.savefig("data_sources/graficos_ocorrencias/new_fig_{}_{}".format(crime, arquivo[-4:]))
+    # plt.savefig("data_sources/graficos_ocorrencias/new_fig_{}_{}".format(crime, arquivo[-4:]))
+    plt.savefig("graficos/ocorrencias/new_fig_{}_{}".format(crime, arquivo[-4:]))
 
 
 def generateHeatMapBrazilOcorrencias(arquivo):
@@ -99,7 +100,7 @@ def generateHeatMapBrazilOcorrencias(arquivo):
     :param arquivo: string
     :return: void
     """
-    global estados_dir
+    global ESTADOS_DIR
 
     df_pop = getDataframePopState(arquivo[-4:])
     df_pop.rename(columns={'CD_GEOCUF': 'estado_ibge'})
