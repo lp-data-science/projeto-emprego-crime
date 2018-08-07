@@ -6,7 +6,7 @@ import glob
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import functools
+
 plt.style.use('bmh')
 
 
@@ -22,17 +22,18 @@ def getDataframesOcorrenciasAno(ano):
     :param ano: int
     :return: dataframe
     """
+
     global FILES_NAMES
     global ESTADOS_DIR
 
     df_pop = getDataframePopState(ano)
     file = list(filter(lambda x: x[-8:-4] == str(ano), FILES_NAMES))
 
-    file[0] = file[0].split('/')
+    # file[0] = file[0].split('/')
 
     file_csv = file[0][-3] + '/' + file[0][-2] + '/' + file[0][-1]
 
-    f = open(file_csv, 'r', encoding='utf-8')
+    f = open(file[0], 'r', encoding='utf-8')
     df = pd.read_csv(f, sep=';')
     df_crime_cod_uf = df.join(df_pop.set_index("Sigla_UF"), on="Sigla_UF").dropna()
     f.close()
@@ -75,14 +76,38 @@ def getDataframesOcorrenciasEstado(UF, ano):
 
 def plotEstadoHeatMap(arquivo,df_groupby, crime):
 
-    brazil_shape = gpd.read_file(ESTADOS_DIR)
+    global estados_dir
+
+    brazil_shape = gpd.read_file(estados_dir)
     df_brazil_shape = pd.DataFrame(brazil_shape)
     df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
 
+    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("CD_GEOCUF"),
+                                            on="CD_GEOCUF")
+
+    df_join_groupby_shape["proporcao"] = (df_join_groupby_shape.total / df_join_groupby_shape.populacao) * 1000
+
+    geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
+
+    geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
+    plt.title("Proporcao Crimes X Populacao")
+    plt.savefig("data_sources/graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
+
+
+def plotEstadoHeatMap(arquivo,df_groupby, crime):
+
+    brazil_shape = gpd.read_file(ESTADOS_DIR)
+
+    df_brazil_shape = pd.DataFrame(brazil_shape)
+
+    df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
+
+
     df_brazil_shape.rename(columns={"CD_GEOCUF": "estado_ibge"}, inplace=True)
 
-    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"),
-                                            on="estado_ibge_x")
+
+
+    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge_x")
 
     df_join_groupby_shape["proporcao"] = (df_join_groupby_shape.total / df_join_groupby_shape.populacao_x) * 100000
 
@@ -90,13 +115,13 @@ def plotEstadoHeatMap(arquivo,df_groupby, crime):
 
     geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
     plt.title("Proporcao Crimes X Populacao")
-    # plt.savefig("data_sources/graficos_ocorrencias/new_fig_{}_{}".format(crime, arquivo[-4:]))
-    plt.savefig("graficos/ocorrencias/new_fig_{}_{}".format(crime, arquivo[-4:]))
+
+    plt.savefig("graficos/graficos_ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
 
 
 def generateHeatMapBrazilOcorrencias(arquivo):
     """
-    função que plota os gráficos dos crimes anualmente de forma proporcional
+    função que plota os gráficos dos crimes anualmente de forma proporcionalfrom src.utils.utils import ARQUIVOS_OCORRENCIAS
     :param arquivo: string
     :return: void
     """
@@ -106,11 +131,10 @@ def generateHeatMapBrazilOcorrencias(arquivo):
     df_pop.rename(columns={'CD_GEOCUF': 'estado_ibge'})
     df_ocorrencia = getDataframesOcorrenciasAno(arquivo[-4:])
     df_ocorrencia_populacao = pd.merge(df_pop, df_ocorrencia, on="Sigla_UF", how="left", sort=False)
-    # print(df_ocorrencia_populacao.columns.values)
     df_groupby = df_ocorrencia_populacao.groupby(
         ['Tipo_Crime', 'Sigla_UF', 'estado_ibge_x', 'populacao_x'])[
         'PC-Qtde_Ocorrências'].sum().reset_index(name='total')
 
-    #list(map(functools.partial(plotEstadoHeatMap, arquivo=arquivo, df_groupby=df_groupby), CRIMES))
-    for crime in CRIMES:
-        plotEstadoHeatMap(arquivo, df_groupby, crime)
+    list(map(lambda x: plotEstadoHeatMap(arquivo, df_groupby, x), CRIMES))
+
+list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))

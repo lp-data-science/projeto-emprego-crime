@@ -5,6 +5,9 @@ def getUFSigla(tuple_uf_state):
     return tuple_uf_state[0]
 
 
+def getCategoriasFaixaEtaria():
+    return list(filter(lambda x: x.split()[0] == "Faixa", CATEGORIAS_EMPREGOS))
+
 """
 ENUMS
 """

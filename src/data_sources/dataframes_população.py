@@ -9,16 +9,17 @@ import matplotlib.patches as mpatches
 
 from src.utils.utils import ANOS, REGIOES
 
-dataframes_population = {} # Todos os dataframes
+# dataframes_population = {} # Todos os dataframes
 
-current_dir = getcwd()
-dir = join(current_dir, "data_sources/dados_populacao/PROJECOES_2013_POPULACAO.xls")
-state_pop_files = join(current_dir, "data_sources/dados_populacao/*.csv")
+CURRENT_DIR = getcwd()
+PLANILHA_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/PROJECOES_2013_POPULACAO.xls")
+# FILES_CSV_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/*.csv")
 
-pop_csv = glob.glob(state_pop_files)
+# pop_csv = glob.glob(FILES_CSV_POPULACAO)
+
 
 def createDataframes(ano):
-    dir_csv = join(current_dir, 'data_sources/dados_populacao/estados_pop_{}.csv'.format(ano))
+    dir_csv = join(CURRENT_DIR, 'data_sources/dados_populacao/estados_pop_{}.csv'.format(ano))
     df = pd.read_csv(dir_csv, encoding='utf-8', sep=',')
     df_size = len(df)
     df.loc[:, 'ano'] = pd.Series([int(ano)] * df_size)
@@ -28,6 +29,7 @@ def createDataframes(ano):
 
 def getDataframePopState(ano):
     return createDataframes(ano)
+
 
 def getState(state):
     if len(state) == 2:
@@ -61,11 +63,17 @@ def plotEstado(estado,cor):
     df.plot(color=cor)
     return patch
 
+
 def getRegion(region):
     if region in REGIOES:
         return region
 
-file = pd.ExcelFile(dir)
+
+def getDataframeRegions():
+    return dfs_regioes
+
+
+file = pd.ExcelFile(PLANILHA_POPULACAO)
 lista = file.sheet_names
 sheets = list(map(getState, lista))
 sheets = list(filter(lambda a: a != None, sheets))
@@ -92,8 +100,7 @@ for i in range(0, len(sheets)):
     dic_state_population[sheets[i]]["state"] = data_frame_population_state[i]
 
 
-def getDataframeRegions():
-    return dfs_regioes
+
 
 # handles = []
 #

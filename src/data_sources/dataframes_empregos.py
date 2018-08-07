@@ -11,7 +11,6 @@ EMPREGOS_DIR = join(CURRENT_DIR, "data_sources/dados_empregos/*.txt")
 
 FILES_NAMES = glob.glob(EMPREGOS_DIR)
 
-# mapear uma funcao de gerar dataframe em cima de files_names
 
 def fillDataFramesEmpregos(file):
     data_frame_dict = {}

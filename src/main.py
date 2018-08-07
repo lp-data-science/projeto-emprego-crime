@@ -10,7 +10,7 @@ from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorren
     getDataframesTotalOcorrencias
 from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
 from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS, ESTADOS_SIGLAS, REGIOES, \
-    getUFSigla, SIGLAS_UF
+    getUFSigla, SIGLAS_UF, getCategoriasFaixaEtaria
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -30,7 +30,6 @@ df_populacao = pd.concat(dfs_populacao)
 ## Dataframe população por região
 lista_dfs_regioes_populacao = getDataframeRegions()
 
-
 # Dataframe de empregos
 dfs_empregos = getDataFramesEmpregos()
 
@@ -47,7 +46,23 @@ Processamento de dados
 """
 
 
-def createDataframePopulacaoRegiaoGenero(dataframe):
+def calculateCorrelationCrimeDesempregoByState(UF):
+    df = df_result.loc[df_result.Sigla_UF == UF]
+    correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
+    print(f'{UF}: {correlation}')
+
+
+"""
+Plot
+"""
+
+
+def plotDataframePopulacaoRegiaoGenero(dataframe):
+    """
+    Função que plota gráficos de barra composta informando a variação da população, masculina e feminina, em relação
+    a população mensurada em 2010
+    :param dataframe: pandas.DataFrame
+    """
     df_columns_filtered = dataframe.iloc[3:, 11:16]
     region_name = dataframe.columns.values[0].split()[-1]
 
@@ -76,34 +91,27 @@ def createDataframePopulacaoRegiaoGenero(dataframe):
     plt.gcf().clear()
 
 
-def calculateCorrelationCrimeDesempregoByState(UF):
-    df = df_result.loc[df_result.Sigla_UF == UF]
-    correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
-    print(f'{UF}: {correlation}')
-
-"""
-Plot
-"""
-
-
-def plotTaxaDesempregoFaixaEtaria(categorias):
-    for categoria in categorias:
-        dataframe = dfs_empregos[categoria]
-        dataframe_groupby = dataframe.groupby('ano')['valor'].sum()
-        dataframe_proporcao = list(map(lambda x: ((x / dataframe_groupby.iloc[0]) * 100) - 100, dataframe_groupby))
-        plt.bar(ANOS, dataframe_proporcao, 0.8, color='b')
-        plt.xlabel("Ano")
-        plt.ylabel("Taxa de variação de desemprego em %")
-        plt.plot()
-        categoria_sem_barra = categoria.replace("/", "_")
-        plt.savefig(f'graficos/desemprego/faixa_etaria/{categoria_sem_barra}.png')
-        plt.gcf().clear()
+def plotTaxaDesempregoFaixaEtaria(categoria):
+    """
+    Função que plota os gráficos de taxa de variação de desemprego em relação ao ano de 2010, por faixa etária
+    :param categoria: String
+    """
+    dataframe = [d[categoria] for d in dfs_empregos if categoria in d] #TODO - FOR do list comprehension
+    dataframe_groupby = dataframe[0].groupby('ano')['valor'].sum()
+    dataframe_proporcao = list(map(lambda x: ((x / dataframe_groupby.iloc[0]) * 100) - 100, dataframe_groupby))
+    plt.bar(ANOS, dataframe_proporcao, 0.8, color='b')
+    plt.xlabel("Ano")
+    plt.ylabel("Taxa de variação de desemprego em %")
+    plt.plot()
+    categoria_sem_barra = categoria.replace("/", "_")
+    plt.savefig(f'graficos/desemprego/faixa_etaria/{categoria_sem_barra}.png')
+    plt.gcf().clear()
 
 
 def plotEmpregosOcorrencias(setor):
     global dfs_empregos
 
-    df_emprego = [d[setor] for d in dfs_empregos if setor in d]
+    df_emprego = [d[setor] for d in dfs_empregos if setor in d] #TODO - FOR do list comprehension
     df_join_empregos_ocorrencias = pd.merge(df_emprego[0],
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
@@ -167,31 +175,40 @@ def plotEmpregosOcorrencias(setor):
 """
 Main
 """
+##############
+# Correlacao #
+##############
+# print(df_result.columns.values)
+# df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
+# l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
+#
+# df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
+#
+#
+# for UF in SIGLAS_UF:
+#     for crime in CRIMES:
+#         df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
+#         correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
+#         df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
+#
+# corr = pd.DataFrame()
+#
+# for index, row in df_teste1.iterrows():
+#     corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
+#
+# print(corr)
+#
+# plt.pcolor(corr)
+# plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index)
+# plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns)
+# plt.savefig("graficos/correlacao_por_crime_estado.png")
+#
+##############################################################33
 
-print(df_result.columns.values)
-df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
-l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
 
-df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
+# list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 
-
-for UF in SIGLAS_UF:
-    for crime in CRIMES:
-        df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
-        correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
-        df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
-
-corr = pd.DataFrame()
-
-for index, row in df_teste1.iterrows():
-    corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
-
-print(corr)
-
-plt.pcolor(corr)
-plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index)
-plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns)
-plt.savefig("graficos/correlacao_por_crime_estado.png")
+# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
