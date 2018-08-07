@@ -1,18 +1,13 @@
-import glob
 import os
-from os.path import join
 import pandas as pd
-import numpy as np
-
-from src.data_sources.dataframes_crimes_desempregos import getDesligadosUF, getOcorrenciasByCrime, getPopulacao
-from src.data_sources.dataframes_empregos import getDataFramesEmpregos
-from src.data_sources.dataframes_ocorrencias import generateHeatMapBrazilOcorrencias, getDataframesOcorrenciasCrime, \
-    getDataframesTotalOcorrencias
-from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
-from src.utils.utils import ARQUIVOS_OCORRENCIAS, ANOS, CRIMES, CATEGORIAS_EMPREGOS, ESTADOS_SIGLAS, REGIOES, \
-    getUFSigla, SIGLAS_UF, getCategoriasFaixaEtaria
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+
+from src.data_sources.dataframes_empregos import getDataFramesEmpregos
+from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, ESTADOS_DIR
+from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
+from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS
 
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
@@ -116,10 +111,6 @@ def plotEmpregosOcorrencias(setor):
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
                                             how='inner')
-    # df_join_empregos_ocorrencias = pd.merge(dfs_empregos[setor],
-    #                                         dfs_ocorrencias,
-    #                                         on=['estado_ibge', 'ano'],
-    #                                         how='inner')
 
     df_groupby_empregos_ocorrencias = df_join_empregos_ocorrencias.groupby(
         ['UF', 'Tipo_Crime', df_join_empregos_ocorrencias['ano_ocorrencia'], 'populacao'])[
@@ -128,16 +119,13 @@ def plotEmpregosOcorrencias(setor):
     df_merge = pd.merge(df_emprego[0],
                         df_populacao,
                         on=['estado_ibge', 'ano'])
-    # df_merge = pd.merge(dfs_empregos[setor],
-    #                     df_populacao,
-    #                     on=['estado_ibge', 'ano'])
 
     df_groupby_empregos_ocorrencias['prop_ocorrencias'] = df_groupby_empregos_ocorrencias['ocorrencias'] / df_groupby_empregos_ocorrencias['populacao']
 
     df_merge['prop_desempregados'] = df_merge['valor'] / df_merge['populacao']
 
     setor_sem_barra = setor.replace("/", "_")
-    # os.makedirs(f'graficos/{setor_sem_barra}')
+    os.makedirs(f'graficos/desemprego_ocorrencias/{setor_sem_barra}')
 
     # TODO - Retirar os fors
     for key, value in ESTADOS_SIGLAS.items():
@@ -168,8 +156,51 @@ def plotEmpregosOcorrencias(setor):
 
                 plt.xlabel("Ano")
                 plt.ylabel("Proporção relacionada ao total de habitantes em %")
-                plt.savefig(f'graficos/{setor_sem_barra}/{value}_{crime}')
+                plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}')
             plt.gcf().clear()
+
+
+def plotEstadoHeatMap(arquivo,df_groupby, crime):
+    """
+    Função que gera e salva os gráficos de mapas de calor em arquivo de imagem
+    :param arquivo: String
+    :param df_groupby: pandas.DataFrame
+    :param crime: String
+    :return: void
+    """
+
+    brazil_shape = gpd.read_file(ESTADOS_DIR)
+
+    df_brazil_shape = pd.DataFrame(brazil_shape)
+    df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
+    df_brazil_shape.rename(columns={"CD_GEOCUF": "estado_ibge"}, inplace=True)
+
+    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge_x")
+    df_join_groupby_shape["proporcao"] = (df_join_groupby_shape.total / df_join_groupby_shape.populacao_x) * 100000
+
+    geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
+    geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
+
+    plt.title("Proporcao Crimes X Populacao")
+    plt.savefig("graficos/graficos_ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
+
+
+def plotHeatMapBrazilOcorrencias(arquivo):
+    """
+    função que plota os gráficos dos crimes anualmente de forma proporcional
+    :param arquivo: string
+    :return: void
+    """
+
+    df_pop = getDataframePopState(arquivo[-4:])
+    df_pop.rename(columns={'CD_GEOCUF': 'estado_ibge'})
+    df_ocorrencia = getDataframesOcorrenciasAno(arquivo[-4:])
+    df_ocorrencia_populacao = pd.merge(df_pop, df_ocorrencia, on="Sigla_UF", how="left", sort=False)
+    df_groupby = df_ocorrencia_populacao.groupby(
+        ['Tipo_Crime', 'Sigla_UF', 'estado_ibge_x', 'populacao_x'])[
+        'PC-Qtde_Ocorrências'].sum().reset_index(name='total')
+
+    list(map(lambda x: plotEstadoHeatMap(arquivo, df_groupby, x), CRIMES))
 
 
 """
@@ -203,12 +234,12 @@ Main
 # plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns)
 # plt.savefig("graficos/correlacao_por_crime_estado.png")
 #
-##############################################################33
+##############################################################
 
 
 # list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 
-# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
+# list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
@@ -219,3 +250,13 @@ Main
 # print(getDesligadosUF())
 # print(getOcorrenciasByCrime())
 # print(getPopulacao())
+
+
+
+# df_ocorrencias = reduce(lambda df1,df2 : pd.concat([df1,df2], ignore_index=True, sort=True), dfs_ocorrencias)
+# df_ocorrencias['ano'] = df_ocorrencias.Mes_Ano.str[3:]
+# df_ocorrencias_group_by_estado = df_ocorrencias.groupby(["UF", df_ocorrencias['ano']])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
+# df_ocorrencias_group_by_crime = df_ocorrencias.groupby(["Tipo_Crime","UF"])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
+# df_ocorrencias_group_by_crime_ano = df_ocorrencias.groupby(["Tipo_Crime","UF","ano"])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
+#
+# print(df_ocorrencias_group_by_crime_ano)
