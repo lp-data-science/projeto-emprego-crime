@@ -217,48 +217,13 @@ def plotCorrelationMatrixHeatmap():
     plt.tight_layout()
     plt.colorbar()
     plt.savefig("graficos/correlacao_por_crime_estado.png", dpi=300)
+    plt.gcf().clear()
 
 
 
 """
 Main
 """
-
-
-
-##############
-# Correlacao #
-##############
-# print(df_result.columns.values)
-# df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
-# l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
-#
-# df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
-#
-#
-# for UF in SIGLAS_UF:
-#     for crime in CRIMES:
-#         df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
-#         correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
-#         df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
-#
-# corr = pd.DataFrame()
-#
-# for index, row in df_teste1.iterrows():
-#     corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
-#
-# # print(corr)
-#
-# plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
-# plt.pcolor(corr)
-# plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
-# plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
-# plt.tight_layout()
-# plt.colorbar()
-# plt.savefig("graficos/correlacao_por_crime_estado.png", dpi=300)
-
-#
-##############################################################
 
 
 # list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
