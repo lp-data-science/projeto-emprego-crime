@@ -8,8 +8,7 @@ import numpy as np
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos
 from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, ESTADOS_DIR
 from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
-from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF
-
+from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
@@ -42,11 +41,10 @@ Processamento de dados
 """
 
 
-def calculateCorrelationCrimeDesempregoByState(UF):
-    df = df_result.loc[df_result.Sigla_UF == UF]
-    correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
-    # print(f'{UF}: {correlation}')
-
+def calculateCorrelationCrimeDesempregoPorEstado(main_dataframe, dataframe, UF, crime):
+    dataframe_estado_crime = dataframe.loc[dataframe.Tipo_Crime == crime]
+    correlation = dataframe_estado_crime["taxa_ocorrencia"].corr(dataframe_estado_crime["taxa_desemprego"])
+    main_dataframe.loc[(main_dataframe["Sigla_UF"] == UF) & (main_dataframe.Tipo_Crime == crime), "corr"] = correlation
 
 """
 Plot
@@ -169,18 +167,16 @@ def plotEstadoHeatMap(arquivo,df_groupby, crime):
     :param crime: String
     :return: void
     """
-
     brazil_shape = gpd.read_file(ESTADOS_DIR)
 
     df_brazil_shape = pd.DataFrame(brazil_shape)
     df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
     df_brazil_shape.rename(columns={"CD_GEOCUF": "estado_ibge"}, inplace=True)
 
-    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge_x")
-    df_join_groupby_shape["proporcao"] = (df_join_groupby_shape.total / df_join_groupby_shape.populacao_x) * 100000
+    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge")
 
     geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
-    geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
+    geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="YlGnBu", legend=True, vmin=0, vmax=160)
 
     plt.title("Proporcao Crimes X Populacao")
     plt.savefig("graficos/graficos_ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
@@ -192,51 +188,74 @@ def plotHeatMapBrazilOcorrencias(arquivo):
     :param arquivo: string
     :return: void
     """
+    global df_result
 
-    df_pop = getDataframePopState(arquivo[-4:])
-    df_pop.rename(columns={'CD_GEOCUF': 'estado_ibge'})
-    df_ocorrencia = getDataframesOcorrenciasAno(arquivo[-4:])
-    df_ocorrencia_populacao = pd.merge(df_pop, df_ocorrencia, on="Sigla_UF", how="left", sort=False)
-    df_groupby = df_ocorrencia_populacao.groupby(
-        ['Tipo_Crime', 'Sigla_UF', 'estado_ibge_x', 'populacao_x'])[
-        'PC-Qtde_Ocorrências'].sum().reset_index(name='total')
+    df_result2 = df_result.loc[df_result.ano == int(arquivo[-4:])]
+    list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
 
-    list(map(lambda x: plotEstadoHeatMap(arquivo, df_groupby, x), CRIMES))
+
+def formatDataframeToPlotCorrelation(empty_df, tuple_df):
+    empty_df.loc[tuple_df[1]["Sigla_UF"], tuple_df[1]["Tipo_Crime"]] = tuple_df[1]["corr"]
+
+
+def getCorrelationDataframe(df_filtered, UF):
+    dataframe_estado = df_filtered.loc[df_filtered.Sigla_UF == UF]
+    list(map(lambda x: calculateCorrelationCrimeDesempregoPorEstado(df_filtered, dataframe_estado, UF, x), CRIMES))
+
+
+def plotCorrelationMatrixHeatmap():
+    df_filtered = df_result.filter(
+        ["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
+
+    list(map(lambda x: getCorrelationDataframe(df_filtered, x), ESTADOS_SIGLAS))
+    corr = pd.DataFrame()
+    list(map(lambda x: formatDataframeToPlotCorrelation(corr, x), df_filtered.iterrows()))
+    plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
+    plt.pcolor(corr)
+    plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
+    plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
+    plt.tight_layout()
+    plt.colorbar()
+    plt.savefig("graficos/correlacao_por_crime_estado.png", dpi=300)
+
 
 
 """
 Main
 """
+
+
+
 ##############
 # Correlacao #
 ##############
 # print(df_result.columns.values)
-df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
-l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
-
-df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
-
-
-for UF in SIGLAS_UF:
-    for crime in CRIMES:
-        df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
-        correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
-        df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
-
-corr = pd.DataFrame()
-
-for index, row in df_teste1.iterrows():
-    corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
-
-# print(corr)
-
-plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
-plt.pcolor(corr)
-plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
-plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
-plt.tight_layout()
-plt.colorbar()
-plt.savefig("graficos/correlacao_por_crime_estado.png", dpi=300)
+# df_result_corr = df_result.filter(["taxa_ocorrencia", "taxa_desemprego"], axis=1)
+# l_corr = list(map(calculateCorrelationCrimeDesempregoByState, SIGLAS_UF))
+#
+# df_teste1 = df_result.filter(["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
+#
+#
+# for UF in SIGLAS_UF:
+#     for crime in CRIMES:
+#         df = df_teste1.loc[(df_teste1.Sigla_UF == UF) & (df_teste1.Tipo_Crime == crime)]
+#         correlation = df["taxa_ocorrencia"].corr(df["taxa_desemprego"])
+#         df_teste1.loc[(df_teste1["Sigla_UF"] == UF) & (df_teste1.Tipo_Crime == crime), "corr"] = correlation
+#
+# corr = pd.DataFrame()
+#
+# for index, row in df_teste1.iterrows():
+#     corr.loc[row["Sigla_UF"], row["Tipo_Crime"]] = row["corr"]
+#
+# # print(corr)
+#
+# plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
+# plt.pcolor(corr)
+# plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
+# plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
+# plt.tight_layout()
+# plt.colorbar()
+# plt.savefig("graficos/correlacao_por_crime_estado.png", dpi=300)
 
 #
 ##############################################################
