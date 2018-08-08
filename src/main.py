@@ -1,23 +1,87 @@
 import os
+from functools import reduce
+
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-from src.data_sources.dataframes_empregos import getDataFramesEmpregos
-from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, ESTADOS_DIR
-from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions
-from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS
+from src.data_sources.dataframes_empregos import getDataFramesEmpregos, getDataFrameEmpregosFromJson
+from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, \
+    ESTADOS_DIR, getDataFrameOcorrenciasFromCsv
+from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions, \
+    getDataFramePopulacaoFromCsv
+from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS, CATEGORIAS_EMPREGOS
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
+
+"""
+Funções auxiliares
+"""
+
+
+def creatListUfOcorrencias(uf):
+    lista = list(map(lambda a: [uf, a], CRIMES))
+    return lista
+
+
+def creatListUfOcorrenciasAno(row):
+    new_row = row
+    lista = list(map(lambda ano: np.append(new_row, [ano]), ANOS))
+    df_temp = pd.DataFrame(lista, columns=["Tipo_Crime", "UF", "ano"])
+    return df_temp
+
+
+def createRowUfOcorrenciasSemAno(row):
+    new_row = pd.DataFrame({"UF": [row[0]], "Tipo_Crime": [row[1]]})
+    return new_row
+
+
+def getDataframePrincipal():
+    df_populacao_principal = getDataFramePopulacaoFromCsv()
+    df_desemprego_group_by_desligados_uf = getDataFrameEmpregosFromJson()
+    df_ocorrencias_group_by_crime_ano = getDataFrameOcorrenciasFromCsv()
+
+    list_temp = list(map(creatListUfOcorrencias, ESTADOS_SIGLAS.values()))
+    list_row = reduce(lambda a, b: a + b, list_temp)
+    list_df_temp = list(map(createRowUfOcorrenciasSemAno, list_row))
+
+    df_base_uf_ocorrencia = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True),
+                                   list_df_temp)
+
+    lista_dfs_com_ano = list(map(creatListUfOcorrenciasAno, df_base_uf_ocorrencia.values))
+
+    df_base_uf_ocorrencia_ano = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True),
+                                       lista_dfs_com_ano)
+
+    df_estado_ocorrencia_ano = pd.merge(df_base_uf_ocorrencia_ano, df_ocorrencias_group_by_crime_ano,
+                                        on=["UF", "Tipo_Crime", "ano"], how='left')
+
+    df_estado_ocorrencia_ano_populacao = pd.merge(df_estado_ocorrencia_ano, df_populacao_principal, on=["UF", 'ano'],
+                                                  how='left')
+
+    df_estado_ocorrencia_ano_populacao.rename(columns={'CD_GEOCUF': 'estado_ibge'}, inplace=True)
+
+    ano_to_int = pd.to_numeric(df_estado_ocorrencia_ano_populacao.ano, errors='coerce')
+
+    df_estado_ocorrencia_ano_populacao['ano'] = ano_to_int
+
+    df_resultante = pd.merge(df_estado_ocorrencia_ano_populacao, df_desemprego_group_by_desligados_uf,
+                         on=["estado_ibge", 'ano'], how='left')
+
+    df_resultante['taxa_ocorrencia'] = df_resultante['ocorrencias'] / df_resultante['populacao'] * 100000
+    df_resultante['taxa_desemprego'] = df_resultante['total_desempregados'] / df_resultante['populacao'] * 100000
+
+    df_resultante.to_csv("df_result.csv")
+
+    return df_resultante
 
 
 """
 Dataframes base
 """
-
 
 # Dataframe de população
 dfs_populacao = list(map(getDataframePopState, ANOS))
@@ -32,9 +96,8 @@ dfs_empregos = getDataFramesEmpregos()
 dfs_ocorrencias = getDataframesTotalOcorrencias()
 dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
 
-#Dataframe principal
-df_result = pd.read_csv("data_sources/dados_crimes_desemprego/df_result.csv")
-
+# Dataframe principal
+df_result = getDataframePrincipal()
 
 """
 Processamento de dados
@@ -45,6 +108,7 @@ def calculateCorrelationCrimeDesempregoPorEstado(main_dataframe, dataframe, UF, 
     dataframe_estado_crime = dataframe.loc[dataframe.Tipo_Crime == crime]
     correlation = dataframe_estado_crime["taxa_ocorrencia"].corr(dataframe_estado_crime["taxa_desemprego"])
     main_dataframe.loc[(main_dataframe["Sigla_UF"] == UF) & (main_dataframe.Tipo_Crime == crime), "corr"] = correlation
+
 
 """
 Plot
@@ -65,7 +129,6 @@ def plotDataframePopulacaoRegiaoGenero(dataframe):
     df_total_men_2010 = df_total_men.iloc[0]
     # Dataframe com a proporção masculina em relação a 2010
     df_proporcao_men = list(map(lambda x: ((x / df_total_men_2010) * 100) - 100, df_total_men))
-
 
     # Dataframe população feminina
     df_total_women = df_columns_filtered.iloc[24]
@@ -90,7 +153,7 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
     Função que plota os gráficos de taxa de variação de desemprego em relação ao ano de 2010, por faixa etária
     :param categoria: String
     """
-    dataframe = [d[categoria] for d in dfs_empregos if categoria in d] #TODO - FOR do list comprehension
+    dataframe = [d[categoria] for d in dfs_empregos if categoria in d]  # TODO - FOR do list comprehension
     dataframe_groupby = dataframe[0].groupby('ano')['valor'].sum()
     dataframe_proporcao = list(map(lambda x: ((x / dataframe_groupby.iloc[0]) * 100) - 100, dataframe_groupby))
     plt.bar(ANOS, dataframe_proporcao, 0.8, color='b')
@@ -105,7 +168,7 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
 def plotEmpregosOcorrencias(setor):
     global dfs_empregos
 
-    df_emprego = [d[setor] for d in dfs_empregos if setor in d] #TODO - FOR do list comprehension
+    df_emprego = [d[setor] for d in dfs_empregos if setor in d]  # TODO - FOR do list comprehension
     df_join_empregos_ocorrencias = pd.merge(df_emprego[0],
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
@@ -119,12 +182,16 @@ def plotEmpregosOcorrencias(setor):
                         df_populacao,
                         on=['estado_ibge', 'ano'])
 
-    df_groupby_empregos_ocorrencias['prop_ocorrencias'] = df_groupby_empregos_ocorrencias['ocorrencias'] / df_groupby_empregos_ocorrencias['populacao']
+    df_groupby_empregos_ocorrencias['prop_ocorrencias'] = df_groupby_empregos_ocorrencias['ocorrencias'] / \
+                                                          df_groupby_empregos_ocorrencias['populacao']
 
     df_merge['prop_desempregados'] = df_merge['valor'] / df_merge['populacao']
 
     setor_sem_barra = setor.replace("/", "_")
-    os.makedirs(f'graficos/desemprego_ocorrencias/{setor_sem_barra}')
+    try:
+        os.makedirs(f'graficos/desemprego_ocorrencias/{setor_sem_barra}')
+    except:
+        print("Diretório já existe.")
 
     # TODO - Retirar os fors
     for key, value in ESTADOS_SIGLAS.items():
@@ -136,12 +203,13 @@ def plotEmpregosOcorrencias(setor):
             df2 = df_merge.loc[(df_merge.Sigla_UF == key)]
 
             x = df1['ano_ocorrencia']
-            y = df1['prop_ocorrencias'] * 100
-            y2 = df2['prop_desempregados'] * 100
+            y = df1['prop_ocorrencias'] * 100000
+            y2 = df2['prop_desempregados'] * 100000
 
             if len(x) != len(y2):
                 print(f'Dados inconsistentes de {value} para o crime {crime}')
             else:
+                plt.title("Estado: {0}\nCrime: {1}".format(value, crime))
                 plt.plot(x, y, color='mediumblue')
                 plt.plot(x, y2, color='lime')
 
@@ -154,12 +222,13 @@ def plotEmpregosOcorrencias(setor):
                 plt.legend(title='Taxas', handles=handlesIBGE)
 
                 plt.xlabel("Ano")
-                plt.ylabel("Proporção relacionada ao total de habitantes em %")
-                plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}')
+                plt.ylabel("Proporção (por 100.000 habitantes)")
+                # plt.tight_layout()
+                plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}', dpi=300)
             plt.gcf().clear()
 
 
-def plotEstadoHeatMap(arquivo,df_groupby, crime):
+def plotEstadoHeatMap(arquivo, df_groupby, crime):
     """
     Função que gera e salva os gráficos de mapas de calor em arquivo de imagem
     :param arquivo: String
@@ -204,6 +273,10 @@ def getCorrelationDataframe(df_filtered, UF):
 
 
 def plotCorrelationMatrixHeatmap():
+    """
+    Função para plotar o heatmap da matriz de correlação entre taxa de desempregados e taxa de ocorrências, por estado
+    :return: void
+    """
     df_filtered = df_result.filter(
         ["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
 
@@ -220,11 +293,9 @@ def plotCorrelationMatrixHeatmap():
     plt.gcf().clear()
 
 
-
 """
 Main
 """
-
 
 # list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 
@@ -239,7 +310,6 @@ Main
 # print(getDesligadosUF())
 # print(getOcorrenciasByCrime())
 # print(getPopulacao())
-
 
 
 # df_ocorrencias = reduce(lambda df1,df2 : pd.concat([df1,df2], ignore_index=True, sort=True), dfs_ocorrencias)

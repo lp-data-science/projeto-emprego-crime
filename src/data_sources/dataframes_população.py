@@ -1,4 +1,5 @@
 import glob
+from functools import reduce
 from os import getcwd
 import pandas as pd
 from os import getcwd
@@ -7,15 +8,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from src.utils.utils import ANOS, REGIOES
+from src.utils.utils import ANOS, REGIOES, ESTADOS_SIGLAS
 
 # dataframes_population = {} # Todos os dataframes
 
 CURRENT_DIR = getcwd()
 PLANILHA_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/PROJECOES_2013_POPULACAO.xls")
-# FILES_CSV_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/*.csv")
+DIR_CSV_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/*.csv")
 
-# pop_csv = glob.glob(FILES_CSV_POPULACAO)
+FILES_NAMES = glob.glob(DIR_CSV_POPULACAO)
 
 
 def createDataframes(ano):
@@ -85,37 +86,23 @@ dfs = [getDataframe(file=file, state=x) for x in sheets]
 
 dfs_regioes = [getDataframe(file=file, state=region) for region in region_list]
 
-data_frame_population_men = list(map(getMenPopulation, dfs))
-data_frame_population_women = list(map(getWomenPopulation, dfs))
-data_frame_population_state = list(map(getStatePopulation, dfs))
-
 dic_state_population = {}
 
 for i in sheets:
     dic_state_population[i] = {}
 
-for i in range(0, len(sheets)):
-    dic_state_population[sheets[i]]["men"] = data_frame_population_men[i]
-    dic_state_population[sheets[i]]["women"] = data_frame_population_women[i]
-    dic_state_population[sheets[i]]["state"] = data_frame_population_state[i]
+
+def getDataFramePopulacaoFromCsv():
+    global FILES_NAMES
+    list_df_populacao = list(map(dataFramePopulacaoFromCsv, FILES_NAMES))
+    df_populacao = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True), list_df_populacao)
+    return df_populacao
 
 
-
-
-# handles = []
-#
-# handles.append(plotEstado('PE','blue'))
-# handles.append(plotEstado('PB', 'red'))
-# handles.append(plotEstado('BA','pink'))
-# handles.append(plotEstado('AL', 'grey'))
-# handles.append(plotEstado('SE', 'green'))
-# handles.append(plotEstado('PI', 'yellow'))
-# handles.append(plotEstado('MA', 'magenta'))
-# handles.append(plotEstado('CE','lime'))
-#
-# plt.legend(title='Estados', handles=handles)
-#
-# plt.xlabel("ano")
-# plt.ylabel("população")
-# plt.savefig("populacao_ano.png")
-# plt.show()
+def dataFramePopulacaoFromCsv(filename):
+    df_estados = pd.DataFrame({"UF": list(ESTADOS_SIGLAS.values()), "Sigla_UF": list(ESTADOS_SIGLAS.keys())})
+    ano = filename[-8:-4]
+    df = pd.read_csv(filename, encoding="utf-8", sep=',')
+    df["ano"] = ano
+    new_df = pd.merge(df, df_estados, on=['Sigla_UF'], how="left")
+    return new_df

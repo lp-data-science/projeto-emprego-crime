@@ -1,3 +1,4 @@
+from functools import reduce
 from os import getcwd
 from os.path import join
 from src.data_sources.dataframes_população import getDataframePopState
@@ -92,3 +93,18 @@ def plotEstadoHeatMap(arquivo,df_groupby, crime):
     geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
     plt.title("Proporcao Crimes X Populacao")
     plt.savefig("data_sources/graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
+
+
+def getDataFrameOcorrenciasFromCsv():
+    global FILES_NAMES
+    list_df_ocorrencias = list(map(dataFrameOcorrenciasFromCsv, FILES_NAMES))
+    df_ocorrencias = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True), list_df_ocorrencias)
+    df_ocorrencias['ano'] = df_ocorrencias.Mês_Ano.str[3:]
+    df_ocorrencias_group_by_crime_ano = df_ocorrencias.groupby(["Tipo_Crime", "UF", "ano"])[
+        'PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
+    return df_ocorrencias_group_by_crime_ano
+
+
+def dataFrameOcorrenciasFromCsv(filename):
+    df = pd.read_csv(filename, encoding="utf-8", sep=';')
+    return df
