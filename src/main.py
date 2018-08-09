@@ -12,7 +12,8 @@ from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencia
     ESTADOS_DIR, getDataFrameOcorrenciasFromCsv
 from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions, \
     getDataFramePopulacaoFromCsv
-from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS, CATEGORIAS_EMPREGOS
+from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS, CATEGORIAS_EMPREGOS, \
+    getCategoriasFaixaEtaria
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
@@ -166,11 +167,49 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
     dataframe_groupby = dataframe[0].groupby('ano')['valor'].sum()
     dataframe_proporcao = list(map(lambda x: ((x / dataframe_groupby.iloc[0]) * 100) - 100, dataframe_groupby))
     plt.bar(ANOS, dataframe_proporcao, 0.8, color='b')
+    plt.title(categoria.split('-')[0])
     plt.xlabel("Ano")
     plt.ylabel("Taxa de variação de desemprego em %")
     plt.plot()
     categoria_sem_barra = categoria.replace("/", "_")
     plt.savefig(f'graficos/desemprego/faixa_etaria/{categoria_sem_barra}.png')
+    plt.gcf().clear()
+
+
+def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
+    key, value = ESTADOS_SIGLAS.keys(), ESTADOS_SIGLAS.values()
+    x = lambda value: dfx.loc[(dfx.UF == value) & (dfx.Tipo_Crime == crime)]
+    y = lambda key: dfy.loc[(dfy.Sigla_UF == key)]
+    df1 = list(map(x, value))
+    df2 = list(map(y, key))
+
+    list(map(plot_chart, df1, df2, value, [crime] * 27, [setor_sem_barra] * 27))
+
+
+def plot_chart(df1, df2, value, crime, setor_sem_barra):
+    handlesIBGE = []
+    x = df1['ano_ocorrencia']
+    y = df1['prop_ocorrencias'] * 100000
+    y2 = df2['prop_desempregados'] * 100000
+
+    if len(x) != len(y2):
+        print(f'Dados inconsistentes de {value} para o crime {crime}')
+    else:
+        plt.title("Estado: {0}\nCrime: {1}".format(value, crime))
+        plt.plot(x, y, color='mediumblue')
+        plt.plot(x, y2, color='lime')
+
+        patch1 = mpatches.Patch(color='mediumblue', label='Ocorrências')
+        patch2 = mpatches.Patch(color='lime', label='Desempregados')
+
+        handlesIBGE.append(patch1)
+        handlesIBGE.append(patch2)
+
+        plt.legend(title='Taxas', handles=handlesIBGE)
+
+        plt.xlabel("Ano")
+        plt.ylabel("Proporção (por 100.000 habitantes)")
+        plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}', dpi=300)
     plt.gcf().clear()
 
 
@@ -203,47 +242,7 @@ def plotEmpregosOcorrencias(setor):
     except:
         print("Diretório já existe.")
 
-    # TODO - Retirar os fors
-    for key, value in ESTADOS_SIGLAS.items():
-        for crime in CRIMES:
-            handlesIBGE = []
-
-            df1 = df_groupby_empregos_ocorrencias.loc[(df_groupby_empregos_ocorrencias.UF == value) &
-                                                      (df_groupby_empregos_ocorrencias.Tipo_Crime == crime)]
-            df2 = df_merge.loc[(df_merge.Sigla_UF == key)]
-
-            x = df1['ano_ocorrencia']
-            y = df1['prop_ocorrencias'] * 100000
-            y2 = df2['prop_desempregados'] * 100000
-
-            if len(x) != len(y2):
-                print(f'Dados inconsistentes de {value} para o crime {crime}')
-            else:
-                if(setor.split()[0] == 'Faixa'):
-                    setor_title = (setor.split('-')[0]) + " " + (setor.split(',')[-1])
-                else:
-                    setor_title = (setor.split(',')[0]) + " " +\
-                                  (setor.split(',')[1].split('-')[0]) + " " +\
-                                  (setor.split(',')[-1])
-                plt.title(f'Estado: {value}\nCrime: {crime}\n{setor_title}', fontsize=14)
-                plt.plot(x, y, color='mediumblue')
-                plt.plot(x, y2, color='lime')
-
-                patch1 = mpatches.Patch(color='mediumblue', label='Ocorrências')
-                patch2 = mpatches.Patch(color='lime', label='Desempregados')
-
-                handlesIBGE.append(patch1)
-                handlesIBGE.append(patch2)
-
-                plt.legend(title='Taxas', handles=handlesIBGE)
-
-                plt.xlabel("Ano")
-                plt.ylabel("Proporção (por 100.000 habitantes)")
-                # plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-                # plt.tight_layout()
-                plt.subplots_adjust(top=0.85)
-                plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}', dpi=300)
-            plt.gcf().clear()
+    list(map(lambda x: get_all_chart_data(df_groupby_empregos_ocorrencias, df_merge, x, setor_sem_barra), CRIMES))
 
 
 def plotEstadoHeatMap(arquivo, df_groupby, crime):
@@ -265,9 +264,9 @@ def plotEstadoHeatMap(arquivo, df_groupby, crime):
     geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
     geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="YlGnBu", legend=True, vmin=0, vmax=160)
 
-    plt.title("Proporcao Crimes X Populacao")
-    plt.savefig("graficos/ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
-
+    plt.title(f'Proporção Crimes X População ({arquivo[-4:]})\n(a cada 100.000 habitantes)')
+    plt.savefig(f'graficos/ocorrencias/fig_{crime}_{arquivo[-4:]}')
+    plt.gcf().clear()
 
 def plotHeatMapBrazilOcorrencias(arquivo):
     """
