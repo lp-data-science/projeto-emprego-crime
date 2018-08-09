@@ -92,7 +92,7 @@ def plotEstadoHeatMap(arquivo,df_groupby, crime):
 
     geodf_join_groupby_shape.plot(column="proporcao", cmap="YlGnBu", legend=True)
     plt.title("Proporcao Crimes X Populacao")
-    plt.savefig("data_sources/graficos_ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
+    plt.savefig("data_sources/ocorrencias/fig_{}_{}".format(crime, arquivo[-4:]))
 
 
 def getDataFrameOcorrenciasFromCsv():

@@ -79,6 +79,15 @@ def getDataframePrincipal():
     return df_resultante
 
 
+def formatDataframeToPlotCorrelation(empty_df, tuple_df):
+    empty_df.loc[tuple_df[1]["Sigla_UF"], tuple_df[1]["Tipo_Crime"]] = tuple_df[1]["corr"]
+
+
+def getCorrelationDataframe(df_filtered, UF):
+    dataframe_estado = df_filtered.loc[df_filtered.Sigla_UF == UF]
+    list(map(lambda x: calculateCorrelationCrimeDesempregoPorEstado(df_filtered, dataframe_estado, UF, x), CRIMES))
+
+
 """
 Dataframes base
 """
@@ -188,6 +197,7 @@ def plotEmpregosOcorrencias(setor):
     df_merge['prop_desempregados'] = df_merge['valor'] / df_merge['populacao']
 
     setor_sem_barra = setor.replace("/", "_")
+
     try:
         os.makedirs(f'graficos/desemprego_ocorrencias/{setor_sem_barra}')
     except:
@@ -209,7 +219,13 @@ def plotEmpregosOcorrencias(setor):
             if len(x) != len(y2):
                 print(f'Dados inconsistentes de {value} para o crime {crime}')
             else:
-                plt.title("Estado: {0}\nCrime: {1}".format(value, crime))
+                if(setor.split()[0] == 'Faixa'):
+                    setor_title = (setor.split('-')[0]) + " " + (setor.split(',')[-1])
+                else:
+                    setor_title = (setor.split(',')[0]) + " " +\
+                                  (setor.split(',')[1].split('-')[0]) + " " +\
+                                  (setor.split(',')[-1])
+                plt.title(f'Estado: {value}\nCrime: {crime}\n{setor_title}', fontsize=14)
                 plt.plot(x, y, color='mediumblue')
                 plt.plot(x, y2, color='lime')
 
@@ -223,7 +239,9 @@ def plotEmpregosOcorrencias(setor):
 
                 plt.xlabel("Ano")
                 plt.ylabel("Proporção (por 100.000 habitantes)")
+                # plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
                 # plt.tight_layout()
+                plt.subplots_adjust(top=0.85)
                 plt.savefig(f'graficos/desemprego_ocorrencias/{setor_sem_barra}/{value}_{crime}', dpi=300)
             plt.gcf().clear()
 
@@ -248,7 +266,7 @@ def plotEstadoHeatMap(arquivo, df_groupby, crime):
     geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="YlGnBu", legend=True, vmin=0, vmax=160)
 
     plt.title("Proporcao Crimes X Populacao")
-    plt.savefig("graficos/graficos_ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
+    plt.savefig("graficos/ocorrencias/n_fig_{}_{}".format(crime, arquivo[-4:]))
 
 
 def plotHeatMapBrazilOcorrencias(arquivo):
@@ -261,15 +279,6 @@ def plotHeatMapBrazilOcorrencias(arquivo):
 
     df_result2 = df_result.loc[df_result.ano == int(arquivo[-4:])]
     list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
-
-
-def formatDataframeToPlotCorrelation(empty_df, tuple_df):
-    empty_df.loc[tuple_df[1]["Sigla_UF"], tuple_df[1]["Tipo_Crime"]] = tuple_df[1]["corr"]
-
-
-def getCorrelationDataframe(df_filtered, UF):
-    dataframe_estado = df_filtered.loc[df_filtered.Sigla_UF == UF]
-    list(map(lambda x: calculateCorrelationCrimeDesempregoPorEstado(df_filtered, dataframe_estado, UF, x), CRIMES))
 
 
 def plotCorrelationMatrixHeatmap():
@@ -301,7 +310,7 @@ Main
 
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 
-# list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
+list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
 # mulheres = total é posicao 24, homens = total é posicao 1
 # list(map(createDataframePopulacaoRegiao, lista_dfs_regioes_populacao))
