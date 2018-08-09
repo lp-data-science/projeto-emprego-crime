@@ -1,18 +1,11 @@
 import glob
 from functools import reduce
-from os import getcwd
+import os
 import pandas as pd
-from os import getcwd
 from os.path import join
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from src.utils.utils import REGIOES, ESTADOS_SIGLAS
 
-from src.utils.utils import ANOS, REGIOES, ESTADOS_SIGLAS
-
-# dataframes_population = {} # Todos os dataframes
-
-CURRENT_DIR = getcwd()
+CURRENT_DIR = os.getcwd()
 PLANILHA_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/PROJECOES_2013_POPULACAO.xls")
 DIR_CSV_POPULACAO = join(CURRENT_DIR, "data_sources/dados_populacao/*.csv")
 
@@ -56,13 +49,13 @@ def getStatePopulation(data_frame):
     return data_frame.iloc[50:70]
 
 
-def plotEstado(estado,cor):
-
-    df = (dic_state_population[estado]["state"])
-    df = df.iloc[0][11:16]
-    patch = mpatches.Patch(color=cor, label=estado)
-    df.plot(color=cor)
-    return patch
+# def plotEstado(estado,cor):
+#
+#     df = (dic_state_population[estado]["state"])
+#     df = df.iloc[0][11:16]
+#     patch = mpatches.Patch(color=cor, label=estado)
+#     df.plot(color=cor)
+#     return patch
 
 
 def getRegion(region):
@@ -72,24 +65,6 @@ def getRegion(region):
 
 def getDataframeRegions():
     return dfs_regioes
-
-
-file = pd.ExcelFile(PLANILHA_POPULACAO)
-lista = file.sheet_names
-sheets = list(map(getState, lista))
-sheets = list(filter(lambda a: a != None, sheets))
-
-region_list = list(map(getRegion, lista))
-region_list = list(filter(lambda a: a != None, region_list))
-
-dfs = [getDataframe(file=file, state=x) for x in sheets]
-
-dfs_regioes = [getDataframe(file=file, state=region) for region in region_list]
-
-dic_state_population = {}
-
-for i in sheets:
-    dic_state_population[i] = {}
 
 
 def getDataFramePopulacaoFromCsv():
@@ -106,3 +81,22 @@ def dataFramePopulacaoFromCsv(filename):
     df["ano"] = ano
     new_df = pd.merge(df, df_estados, on=['Sigla_UF'], how="left")
     return new_df
+
+
+file = pd.ExcelFile(PLANILHA_POPULACAO)
+lista = file.sheet_names
+sheets = list(map(getState, lista))
+sheets = list(filter(lambda a: a != None, sheets))
+
+region_list = list(map(getRegion, lista))
+region_list = list(filter(lambda a: a != None, region_list))
+
+# dfs = [getDataframe(file=file, state=x) for x in sheets]
+#
+dfs_regioes = [getDataframe(file=file, state=region) for region in region_list]
+
+# dic_state_population = {}
+#
+# for i in sheets:
+#     dic_state_population[i] = {}
+
