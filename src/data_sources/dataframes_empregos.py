@@ -4,8 +4,7 @@ from os.path import join
 import pandas as pd
 from ast import literal_eval
 import glob
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+
 
 CURRENT_DIR = getcwd()
 EMPREGOS_DIR = join(CURRENT_DIR, "data_sources/dados_empregos/*.txt")
