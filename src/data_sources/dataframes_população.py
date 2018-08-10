@@ -34,28 +34,9 @@ def getDataframe(file, state):
     return file.parse(state)
 
 
-def getMenPopulation(data_frame):
-    data_frame.columns = (data_frame.iloc[3]).tolist()
-    return data_frame.iloc[4:24]
-
-
-def getWomenPopulation(data_frame):
-    data_frame.columns = (data_frame.iloc[26]).tolist()
-    return data_frame.iloc[27:47]
-
-
 def getStatePopulation(data_frame):
     data_frame.columns = (data_frame.iloc[49]).tolist()
     return data_frame.iloc[50:70]
-
-
-# def plotEstado(estado,cor):
-#
-#     df = (dic_state_population[estado]["state"])
-#     df = df.iloc[0][11:16]
-#     patch = mpatches.Patch(color=cor, label=estado)
-#     df.plot(color=cor)
-#     return patch
 
 
 def getRegion(region):
@@ -64,6 +45,7 @@ def getRegion(region):
 
 
 def getDataframeRegions():
+    dfs_regioes = [getDataframe(file=SHEET_FILE, state=region) for region in REGION_LIST]
     return dfs_regioes
 
 
@@ -83,20 +65,10 @@ def dataFramePopulacaoFromCsv(filename):
     return new_df
 
 
-file = pd.ExcelFile(PLANILHA_POPULACAO)
-lista = file.sheet_names
-sheets = list(map(getState, lista))
-sheets = list(filter(lambda a: a != None, sheets))
+SHEET_FILE = pd.ExcelFile(PLANILHA_POPULACAO)
+SHEETS_LIST = SHEET_FILE.sheet_names
+SHEETS = list(map(getState, SHEETS_LIST))
+SHEETS = list(filter(lambda a: a != None, SHEETS))
 
-region_list = list(map(getRegion, lista))
-region_list = list(filter(lambda a: a != None, region_list))
-
-# dfs = [getDataframe(file=file, state=x) for x in sheets]
-#
-dfs_regioes = [getDataframe(file=file, state=region) for region in region_list]
-
-# dic_state_population = {}
-#
-# for i in sheets:
-#     dic_state_population[i] = {}
-
+REGION_LIST = list(map(getRegion, SHEETS_LIST))
+REGION_LIST = list(filter(lambda a: a != None, REGION_LIST))

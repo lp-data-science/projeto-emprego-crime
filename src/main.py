@@ -1,12 +1,10 @@
 import os
-from functools import reduce
-
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import numpy as np
-
+from functools import reduce
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos, getDataFrameEmpregosFromJson
 from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, \
     ESTADOS_DIR, getDataFrameOcorrenciasFromCsv
@@ -14,6 +12,7 @@ from src.data_sources.dataframes_população import getDataframePopState, getDat
     getDataFramePopulacaoFromCsv
 from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS, CATEGORIAS_EMPREGOS, \
     getCategoriasFaixaEtaria
+
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
@@ -139,13 +138,6 @@ def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
     list(map(plotGraficoDesempregoOcorrencia, df1, df2, value, [crime] * 27, [setor_sem_barra] * 27))
 
 
-def filter_var(var, df):
-    if var in df.keys():
-        return df[var]
-    else:
-        return None
-
-
 """
 Dataframes base
 """
@@ -204,16 +196,13 @@ def plotDataframePopulacaoRegiaoGenero(dataframe):
     df_columns_filtered = dataframe.iloc[3:, 11:16]
     region_name = dataframe.columns.values[0].split()[-1]
 
-    # Dataframe população masculina
     df_total_men = df_columns_filtered.iloc[1]
     df_total_men_2010 = df_total_men.iloc[0]
-    # Dataframe com a proporção masculina em relação a 2010
     df_proporcao_men = list(map(lambda x: ((x / df_total_men_2010) * 100) - 100, df_total_men))
 
-    # Dataframe população feminina
+
     df_total_women = df_columns_filtered.iloc[24]
     df_total_women_2010 = df_total_women.iloc[0]
-    # Dataframe com a proporção feminina em relação a 2010
     df_proporcao_women = list(map(lambda x: ((x / df_total_women_2010) * 100) - 100, df_total_women))
 
     p1 = plt.bar(ANOS, df_proporcao_men, 0.8, color='c')
@@ -380,25 +369,9 @@ def plotCorrelationMatrixHeatmap():
 Main
 """
 
-list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 
+# list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
+# list(map(plotDataframePopulacaoRegiaoGenero, lista_dfs_regioes_populacao))
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
-
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
-
-# mulheres = total é posicao 24, homens = total é posicao 1
-# list(map(createDataframePopulacaoRegiao, lista_dfs_regioes_populacao))
-# plotTaxaDesemprego(CATEGORIAS_EMPREGOS[2:9])
-# list(map(generateHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
-# print(getDesligadosUF())
-# print(getOcorrenciasByCrime())
-# print(getPopulacao())
-
-
-# df_ocorrencias = reduce(lambda df1,df2 : pd.concat([df1,df2], ignore_index=True, sort=True), dfs_ocorrencias)
-# df_ocorrencias['ano'] = df_ocorrencias.Mes_Ano.str[3:]
-# df_ocorrencias_group_by_estado = df_ocorrencias.groupby(["UF", df_ocorrencias['ano']])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
-# df_ocorrencias_group_by_crime = df_ocorrencias.groupby(["Tipo_Crime","UF"])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
-# df_ocorrencias_group_by_crime_ano = df_ocorrencias.groupby(["Tipo_Crime","UF","ano"])['PC-Qtde_Ocorrências'].sum().reset_index(name='ocorrencias')
-#
-# print(df_ocorrencias_group_by_crime_ano)
+# plotCorrelationMatrixHeatmap()
