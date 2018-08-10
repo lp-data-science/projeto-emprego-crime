@@ -14,6 +14,11 @@ FILES_NAMES = glob.glob(EMPREGOS_DIR)
 
 
 def fillDataFramesEmpregos(file):
+    """
+    Função que retorna um dataframe gerado a partir dos dados do arquivo lido
+    :param file: String
+    :return: Dictionary
+    """
     data_frame_dict = {}
     f = open(file, 'r', encoding='iso-8859-15')
     line = f.readline()
@@ -27,12 +32,21 @@ def fillDataFramesEmpregos(file):
 
 
 def getDataFramesEmpregos():
+    """
+    Função que mapeia a função de geração de dataframes no arquivo
+    :return: List
+    """
     global FILES_NAMES
     return list(map(fillDataFramesEmpregos, FILES_NAMES))
 
 
 def dataFrameEmpregosFromJson(filename):
-    data_frame_dict={}
+    """
+    Função que gera dataframes a partir dos arquivos de uma forma especial para gerar o dataframe do gráfico de
+    correlação
+    :param filename: String
+    :return: pandas.DataFrame
+    """
     f = open(filename, 'r', encoding='iso-8859-15')
     line = f.readline()
     dict = literal_eval(line)
@@ -47,6 +61,10 @@ def dataFrameEmpregosFromJson(filename):
 
 
 def getDataFrameEmpregosFromJson():
+    """
+    Função que retorna o dataframe com os valores condensados em um só
+    :return: pandas.DataFrame
+    """
     global FILES_NAMES
     list_df_desemprego = list(map(dataFrameEmpregosFromJson, FILES_NAMES))
     df_desemprego = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True), list_df_desemprego)

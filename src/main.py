@@ -18,17 +18,28 @@ from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OC
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
 
+
 """
 Funções auxiliares
 """
 
 
-def creatListUfOcorrencias(uf):
+def createListUfOcorrencias(uf):
+    """
+    Função que retorna uma lista de listas vinculando estado com tipo de crime
+    :param uf: String
+    :return: List
+    """
     lista = list(map(lambda a: [uf, a], CRIMES))
     return lista
 
 
-def creatListUfOcorrenciasAno(row):
+def createListUfOcorrenciasAno(row):
+    """
+    Função que retorna um dataframe contendo o tipo de crime, estado e ano dos dados
+    :param row: pandas.Series
+    :return: pandas.DataFrame
+    """
     new_row = row
     lista = list(map(lambda ano: np.append(new_row, [ano]), ANOS))
     df_temp = pd.DataFrame(lista, columns=["Tipo_Crime", "UF", "ano"])
@@ -36,23 +47,32 @@ def creatListUfOcorrenciasAno(row):
 
 
 def createRowUfOcorrenciasSemAno(row):
+    """
+    Função que retorna um dataframe contendo apenas o estado e tipo de crime
+    :param row: pandas.Series
+    :return: pandas.DataFrame
+    """
     new_row = pd.DataFrame({"UF": [row[0]], "Tipo_Crime": [row[1]]})
     return new_row
 
 
 def getDataframePrincipal():
+    """
+    Função que retorna o dataframe utilizado para calcular a correlação de cada tipo de crime com cada estado
+    :return: void
+    """
     df_populacao_principal = getDataFramePopulacaoFromCsv()
     df_desemprego_group_by_desligados_uf = getDataFrameEmpregosFromJson()
     df_ocorrencias_group_by_crime_ano = getDataFrameOcorrenciasFromCsv()
 
-    list_temp = list(map(creatListUfOcorrencias, ESTADOS_SIGLAS.values()))
+    list_temp = list(map(createListUfOcorrencias, ESTADOS_SIGLAS.values()))
     list_row = reduce(lambda a, b: a + b, list_temp)
     list_df_temp = list(map(createRowUfOcorrenciasSemAno, list_row))
 
     df_base_uf_ocorrencia = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True),
                                    list_df_temp)
 
-    lista_dfs_com_ano = list(map(creatListUfOcorrenciasAno, df_base_uf_ocorrencia.values))
+    lista_dfs_com_ano = list(map(createListUfOcorrenciasAno, df_base_uf_ocorrencia.values))
 
     df_base_uf_ocorrencia_ano = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True),
                                        lista_dfs_com_ano)
@@ -75,27 +95,66 @@ def getDataframePrincipal():
     df_resultante['taxa_ocorrencia'] = df_resultante['ocorrencias'] / df_resultante['populacao'] * 100000
     df_resultante['taxa_desemprego'] = df_resultante['total_desempregados'] / df_resultante['populacao'] * 100000
 
-    df_resultante.to_csv("df_result.csv")
+    df_resultante.to_csv("data_sources/dados_crimes_desemprego/df_result.csv")
 
     return df_resultante
 
 
 def formatDataframeToPlotCorrelation(empty_df, tuple_df):
+    """
+    Função que formata o dataframe para plotagem de gr[afico
+    :param empty_df: pandas.DataFrame
+    :param tuple_df: pandas.DataFrame
+    :return: void
+    """
     empty_df.loc[tuple_df[1]["Sigla_UF"], tuple_df[1]["Tipo_Crime"]] = tuple_df[1]["corr"]
 
 
 def getCorrelationDataframe(df_filtered, UF):
+    """
+    Função que mapeia a função de cálculo de correlação no dataframe passado como parâmetro
+    :param df_filtered: pandas.DataFrame
+    :param UF: String
+    :return: void
+    """
     dataframe_estado = df_filtered.loc[df_filtered.Sigla_UF == UF]
     list(map(lambda x: calculateCorrelationCrimeDesempregoPorEstado(df_filtered, dataframe_estado, UF, x), CRIMES))
+
+
+def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
+    """
+    Função que mapeia a função de plotagem de gráfico nos dataframes passados como parâmetro
+    :param dfx: pandas.DataFrame
+    :param dfy: pandas.DataFrame
+    :param crime: String
+    :param setor_sem_barra: String
+    :return: void
+    """
+    key, value = ESTADOS_SIGLAS.keys(), ESTADOS_SIGLAS.values()
+    x = lambda value: dfx.loc[(dfx.UF == value) & (dfx.Tipo_Crime == crime)]
+    y = lambda key: dfy.loc[(dfy.Sigla_UF == key)]
+    df1 = list(map(x, value))
+    df2 = list(map(y, key))
+
+    list(map(plotGraficoDesempregoOcorrencia, df1, df2, value, [crime] * 27, [setor_sem_barra] * 27))
+
+
+def filter_var(var, df):
+    if var in df.keys():
+        return df[var]
+    else:
+        return None
 
 
 """
 Dataframes base
 """
 
+
 # Dataframe de população
 dfs_populacao = list(map(getDataframePopState, ANOS))
 df_populacao = pd.concat(dfs_populacao)
+
 ## Dataframe população por região
 lista_dfs_regioes_populacao = getDataframeRegions()
 
@@ -109,12 +168,22 @@ dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
 # Dataframe principal
 df_result = getDataframePrincipal()
 
+
 """
 Processamento de dados
 """
 
 
 def calculateCorrelationCrimeDesempregoPorEstado(main_dataframe, dataframe, UF, crime):
+    """
+    Função que calcula a correlação entre as taxas de crimes com as taxas de desemprego de desemprego, armazenando
+    o resultado na respectiva coluna do dataframe
+    :param main_dataframe: pandas.DataFrame
+    :param dataframe: pandas.DataFrame
+    :param UF: String
+    :param crime: String
+    :return: void
+    """
     dataframe_estado_crime = dataframe.loc[dataframe.Tipo_Crime == crime]
     correlation = dataframe_estado_crime["taxa_ocorrencia"].corr(dataframe_estado_crime["taxa_desemprego"])
     main_dataframe.loc[(main_dataframe["Sigla_UF"] == UF) & (main_dataframe.Tipo_Crime == crime), "corr"] = correlation
@@ -130,6 +199,7 @@ def plotDataframePopulacaoRegiaoGenero(dataframe):
     Função que plota gráficos de barra composta informando a variação da população, masculina e feminina, em relação
     a população mensurada em 2010
     :param dataframe: pandas.DataFrame
+    :return: void
     """
     df_columns_filtered = dataframe.iloc[3:, 11:16]
     region_name = dataframe.columns.values[0].split()[-1]
@@ -162,8 +232,9 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
     """
     Função que plota os gráficos de taxa de variação de desemprego em relação ao ano de 2010, por faixa etária
     :param categoria: String
+    :return: void
     """
-    dataframe = [d[categoria] for d in dfs_empregos if categoria in d]  # TODO - FOR do list comprehension
+    dataframe = [d[categoria] for d in dfs_empregos if categoria in d]
     dataframe_groupby = dataframe[0].groupby('ano')['valor'].sum()
     dataframe_proporcao = list(map(lambda x: ((x / dataframe_groupby.iloc[0]) * 100) - 100, dataframe_groupby))
     plt.bar(ANOS, dataframe_proporcao, 0.8, color='b')
@@ -176,17 +247,16 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
     plt.gcf().clear()
 
 
-def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
-    key, value = ESTADOS_SIGLAS.keys(), ESTADOS_SIGLAS.values()
-    x = lambda value: dfx.loc[(dfx.UF == value) & (dfx.Tipo_Crime == crime)]
-    y = lambda key: dfy.loc[(dfy.Sigla_UF == key)]
-    df1 = list(map(x, value))
-    df2 = list(map(y, key))
-
-    list(map(plot_chart, df1, df2, value, [crime] * 27, [setor_sem_barra] * 27))
-
-
-def plot_chart(df1, df2, value, crime, setor_sem_barra):
+def plotGraficoDesempregoOcorrencia(df1, df2, value, crime, setor_sem_barra):
+    """
+    Função que plota o gráfico de linhas utilizando dataframes para calcular a taxa de desemprego e taxa de ocorrências
+    :param df1: pandas.DataFrame
+    :param df2: pandas.DataFrame
+    :param value: String
+    :param crime: String
+    :param setor_sem_barra: String
+    :return: void
+    """
     handlesIBGE = []
     x = df1['ano_ocorrencia']
     y = df1['prop_ocorrencias'] * 100000
@@ -214,9 +284,14 @@ def plot_chart(df1, df2, value, crime, setor_sem_barra):
 
 
 def plotEmpregosOcorrencias(setor):
+    """
+    Função que prepara os dataframes e os diretórios para organizar os gráficos relacionando desemprego com ocorrências
+    :param setor: String
+    :return: void
+    """
     global dfs_empregos
 
-    df_emprego = [d[setor] for d in dfs_empregos if setor in d]  # TODO - FOR do list comprehension
+    df_emprego = [d[setor] for d in dfs_empregos if setor in d]
     df_join_empregos_ocorrencias = pd.merge(df_emprego[0],
                                             dfs_ocorrencias,
                                             on=['estado_ibge', 'ano'],
@@ -305,11 +380,11 @@ def plotCorrelationMatrixHeatmap():
 Main
 """
 
-# list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
+list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 
-list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
+# list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 
 # mulheres = total é posicao 24, homens = total é posicao 1
 # list(map(createDataframePopulacaoRegiao, lista_dfs_regioes_populacao))
