@@ -112,4 +112,5 @@ ESTADOS_SIGLAS = {
     'TO': 'Tocantins'
 }
 
+
 SIGLAS_UF = list(map(getUFSigla, ESTADOS_SIGLAS.items()))

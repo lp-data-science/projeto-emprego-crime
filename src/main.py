@@ -120,7 +120,7 @@ def getCorrelationDataframe(df_filtered, UF):
     list(map(lambda x: calculateCorrelationCrimeDesempregoPorEstado(df_filtered, dataframe_estado, UF, x), CRIMES))
 
 
-def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
+def getAllChartData(dfx, dfy, crime, setor_sem_barra):
     """
     Função que mapeia a função de plotagem de gráfico nos dataframes passados como parâmetro
     :param dfx: pandas.DataFrame
@@ -137,6 +137,20 @@ def get_all_chart_data(dfx, dfy, crime, setor_sem_barra):
 
     list(map(plotGraficoDesempregoOcorrencia, df1, df2, value, [crime] * 27, [setor_sem_barra] * 27))
 
+c = 10
+
+def createDataframesByRegion(region, region_desempregados):
+    global c
+    new_df = pd.merge(region_desempregados,
+                      region,
+                      on=['estado_ibge', 'ano'],
+                      how='left')
+    new_df_groupby = new_df.groupby(['ano', 'estado_ibge'])[
+        'total_desempregados', 'populacao', 'ocorrencias'].sum().reset_index()
+    new_df_groupby['prop_ocorrencias'] = (new_df_groupby['ocorrencias'] / new_df_groupby['populacao']) * 100000
+    new_df_groupby['prop_desemprego'] = (new_df_groupby['total_desempregados'] / new_df_groupby['populacao']) * 100000
+    new_df_groupby.to_csv(f'f_{c}.csv')
+    c += 10
 
 """
 Dataframes base
@@ -156,10 +170,31 @@ dfs_empregos = getDataFramesEmpregos()
 # Dataframe de ocorrências
 dfs_ocorrencias = getDataframesTotalOcorrencias()
 dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
+dfs_ocorrencias_groupby_ano = dfs_ocorrencias.groupby(['ano', 'Sigla_UF'])['PC-Qtde_Ocorrências'].sum().reset_index()
 
 # Dataframe principal
 df_result = getDataframePrincipal()
 
+
+# Dataframe Correlação por região
+NORTE = df_result[(df_result.estado_ibge > 10) & (df_result.estado_ibge < 20)].groupby(['ano', 'populacao', 'estado_ibge'])['ocorrencias'].sum().reset_index()
+NORDESTE = df_result[(df_result.estado_ibge > 20) & (df_result.estado_ibge < 30)].groupby(['ano', 'populacao', 'estado_ibge'])['ocorrencias'].sum().reset_index()
+SUDESTE = df_result[(df_result.estado_ibge > 30) & (df_result.estado_ibge < 40)].groupby(['ano', 'populacao', 'estado_ibge'])['ocorrencias'].sum().reset_index()
+SUL = df_result[(df_result.estado_ibge > 40) & (df_result.estado_ibge < 50)].groupby(['ano', 'populacao', 'estado_ibge'])['ocorrencias'].sum().reset_index()
+CENTRO_OESTE = df_result[(df_result.estado_ibge >= 50) & (df_result.estado_ibge < 60)].groupby(['ano', 'populacao', 'estado_ibge'])['ocorrencias'].sum().reset_index()
+
+df_json = getDataFrameEmpregosFromJson()
+NORTE_DESEMPREGADOS = df_json[(df_json.estado_ibge > 10) & (df_json.estado_ibge < 20)]
+NORDESTE_DESEMPREGADOS = df_json[(df_json.estado_ibge > 20) & (df_json.estado_ibge < 30)]
+SUDESTE_DESEMPREGADOS = df_json[(df_json.estado_ibge > 30) & (df_json.estado_ibge < 40)]
+SUL_DESEMPREGADOS = df_json[(df_json.estado_ibge > 40) & (df_json.estado_ibge < 50)]
+CENTRO_OESTE_DESEMPREGADOS = df_json[(df_json.estado_ibge >= 50) & (df_json.estado_ibge < 60)]
+
+createDataframesByRegion(NORTE, NORTE_DESEMPREGADOS)
+createDataframesByRegion(NORDESTE, NORDESTE_DESEMPREGADOS)
+createDataframesByRegion(SUDESTE, SUDESTE_DESEMPREGADOS)
+createDataframesByRegion(SUL, SUL_DESEMPREGADOS)
+createDataframesByRegion(CENTRO_OESTE, CENTRO_OESTE_DESEMPREGADOS)
 
 """
 Processamento de dados
@@ -208,12 +243,13 @@ def plotDataframePopulacaoRegiaoGenero(dataframe):
     p1 = plt.bar(ANOS, df_proporcao_men, 0.8, color='c')
     p2 = plt.bar(ANOS, df_proporcao_women, 0.8, bottom=df_proporcao_men, color='y')
 
+    plt.title(f'{region_name}')
     plt.xlabel("Ano")
     plt.ylabel("Taxa de variação de população em %")
     plt.legend((p1[0], p2[0]), ('Masculino', 'Feminino'))
 
-    plt.plot()
-    plt.savefig(f'graficos/populacao/genero/{region_name}.png')
+    plt.ylim(0, 15)
+    plt.savefig(f'graficos/populacao/genero/fig_pop_{region_name}.png')
     plt.gcf().clear()
 
 
@@ -230,9 +266,12 @@ def plotTaxaDesempregoFaixaEtaria(categoria):
     plt.title(categoria.split('-')[0])
     plt.xlabel("Ano")
     plt.ylabel("Taxa de variação de desemprego em %")
+    plt.ylim(-15, 45)
     plt.plot()
     categoria_sem_barra = categoria.replace("/", "_")
-    plt.savefig(f'graficos/desemprego/faixa_etaria/{categoria_sem_barra}.png')
+    nome_arquivo = categoria_sem_barra.split()[0].lower() + "_etaria" + "_" +\
+                   categoria_sem_barra.split()[3]
+    plt.savefig(f'graficos/desemprego/faixa_etaria/fig_desemprego_{nome_arquivo}.png')
     plt.gcf().clear()
 
 
@@ -306,7 +345,7 @@ def plotEmpregosOcorrencias(setor):
     except:
         print("Diretório já existe.")
 
-    list(map(lambda x: get_all_chart_data(df_groupby_empregos_ocorrencias, df_merge, x, setor_sem_barra), CRIMES))
+    list(map(lambda x: getAllChartData(df_groupby_empregos_ocorrencias, df_merge, x, setor_sem_barra), CRIMES))
 
 
 def plotEstadoHeatMap(arquivo, df_groupby, crime):
@@ -326,8 +365,9 @@ def plotEstadoHeatMap(arquivo, df_groupby, crime):
     df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge")
 
     geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
-    geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="YlGnBu", legend=True, vmin=0, vmax=160)
+    geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="autumn_r", legend=True, vmin=0, vmax=160)
 
+    plt.axis("off")
     plt.title(f'Proporção Crimes X População ({arquivo[-4:]})\n(a cada 100.000 habitantes)')
     plt.savefig(f'graficos/ocorrencias/fig_{crime}_{arquivo[-4:]}')
     plt.gcf().clear()
@@ -344,19 +384,20 @@ def plotHeatMapBrazilOcorrencias(arquivo):
     list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
 
 
-def plotCorrelationMatrixHeatmap():
+def plotCorrelationMatrixHeatmap(dict_estados):
     """
     Função para plotar o heatmap da matriz de correlação entre taxa de desempregados e taxa de ocorrências, por estado
+    :param dict_estados: Dictionary
     :return: void
     """
     df_filtered = df_result.filter(
         ["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
 
-    list(map(lambda x: getCorrelationDataframe(df_filtered, x), ESTADOS_SIGLAS))
+    list(map(lambda x: getCorrelationDataframe(df_filtered, x), dict_estados))
     corr = pd.DataFrame()
     list(map(lambda x: formatDataframeToPlotCorrelation(corr, x), df_filtered.iterrows()))
     plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
-    plt.pcolor(corr)
+    plt.pcolor(corr, cmap="Spectral_r")
     plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
     plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
     plt.tight_layout()
@@ -374,4 +415,4 @@ Main
 # list(map(plotDataframePopulacaoRegiaoGenero, lista_dfs_regioes_populacao))
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
-# plotCorrelationMatrixHeatmap()
+# plotCorrelationMatrixHeatmap(ESTADOS_SIGLAS)
