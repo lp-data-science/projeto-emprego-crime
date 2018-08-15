@@ -8,9 +8,9 @@ import glob
 
 CURRENT_DIR = getcwd()
 EMPREGOS_DIR = join(CURRENT_DIR, "data_sources/dados_empregos/*.txt")
-
+CORRELACAO_DIR = join(CURRENT_DIR, "data_sources/dados_empregos/correlacao/*.txt")
 FILES_NAMES = glob.glob(EMPREGOS_DIR)
-
+CORRELACAO_FILES_NAMES = glob.glob(CORRELACAO_DIR)
 
 def fillDataFramesEmpregos(file):
     """
@@ -59,13 +59,14 @@ def dataFrameEmpregosFromJson(filename):
     return df
 
 
+
 def getDataFrameEmpregosFromJson():
     """
     Função que retorna o dataframe com os valores condensados em um só
     :return: pandas.DataFrame
     """
     global FILES_NAMES
-    list_df_desemprego = list(map(dataFrameEmpregosFromJson, FILES_NAMES))
+    list_df_desemprego = list(map(dataFrameEmpregosFromJson, CORRELACAO_FILES_NAMES))
     df_desemprego = reduce(lambda df1, df2: pd.concat([df1, df2], ignore_index=True, sort=True), list_df_desemprego)
     df_desemprego_group_by_desligados_uf = df_desemprego.groupby(["estado_ibge", "ano", "admitidos/desligados"])[
         "valor"].sum().reset_index(name='total_desempregados')

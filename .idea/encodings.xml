@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/src/data_sources/Capitais - posição.txt" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/Número de Admitidos-Desligados por UF, Faixa Etária até 17 Anos - Admitidos-Desligados, Ad.txt" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/Número de Admitidos-Desligados por UF, Faixa Etária até 17 Anos - Admitidos-Desligados, De.txt" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/Número de Admitidos-Desligados por UF, Faixa Etária de 18 a 24 Anos - Admitidos-Desligados.txt" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/Número de Admitidos-Desligados por UF, Grau Instrução, Até 5ª Incompleto - Admitidos-Desli.txt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/correlacao/Número de Admitidos-Desligados por UF, Faixa Etária até 17 Anos - Admitidos-Desligados, Ad.txt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/correlacao/Número de Admitidos-Desligados por UF, Faixa Etária até 17 Anos - Admitidos-Desligados, De.txt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/data_sources/dados_empregos/correlacao/Número de Admitidos-Desligados por UF, Faixa Etária de 18 a 24 Anos - Admitidos-Desligados.txt" charset="ISO-8859-1" />
   </component>
 </project>

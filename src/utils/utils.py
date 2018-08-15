@@ -72,6 +72,24 @@ CATEGORIAS_EMPREGOS = [
     'Sexo, Masculino - Admitidos/Desligados, Desligado'
 ]
 
+CATEGORIAS_EMPREGOS_CORRELACAO = [
+    'Grau Instrução, Superior Incompleto - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Administração Pública - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Agropecuária - Admitidos/Desligados, Admitido',
+    'Setor IBGE, Agropecuária - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Comércio - Admitidos/Desligados, Admitido',
+    'Setor IBGE, Comércio - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Construção Civil - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Extração Mineral - Admitidos/Desligados, Desligado',
+    'Setor IBGE, Indústria de Transformação - Admitidos/Desligados, Desligado',
+    'Setor IBGE, SERV IND UP - Admitidos/Desligados, Admitido',
+    'Setor IBGE, SERV IND UP - Admitidos/Desligados, Desligado',
+    'Sexo, Feminino - Admitidos/Desligados, Admitido',
+    'Sexo, Feminino - Admitidos/Desligados, Desligado',
+    'Sexo, Masculino - Admitidos/Desligados, Admitido',
+    'Sexo, Masculino - Admitidos/Desligados, Desligado'
+]
+
 REGIOES = [
     "Norte",
     "Nordeste",
@@ -117,6 +135,5 @@ ESTADOS_SIGLAS = {
     'SP': 'São Paulo',
     'TO': 'Tocantins'
 }
-
 
 SIGLAS_UF = list(map(getUFSigla, ESTADOS_SIGLAS.items()))

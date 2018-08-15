@@ -5,6 +5,9 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from functools import reduce
+
+from matplotlib import colors
+
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos, getDataFrameEmpregosFromJson
 from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, \
     ESTADOS_DIR, getDataFrameOcorrenciasFromCsv
@@ -149,7 +152,7 @@ def createDataframesByRegion(region, region_desempregados):
     return new_df_groupby
 
 
-def calculateCorrelationCrimeDesempregoPorRegiao(dataframe, crime):
+def calculateCorrelationCrimeDesempregoRegiao(dataframe, crime):
     """
     Função que calcula a correlação entre as taxas de crimes com as taxas de desemprego de desemprego, armazenando
     o resultado na respectiva coluna do dataframe
@@ -161,17 +164,60 @@ def calculateCorrelationCrimeDesempregoPorRegiao(dataframe, crime):
     dataframe.loc[(dataframe.Tipo_Crime == crime), "corr"] = correlation
 
 
-def formatDataframeToCalculateCorrelation(dataframe_tuple):
+def processDataframeToCalculateCorrelationRegiao(dataframe_tuple):
     new_dataframe = createDataframesByRegion(dataframe_tuple[0], dataframe_tuple[1])
     new_dataframe.to_csv("teste.csv")
     new_dataframe_groupby = new_dataframe.groupby(['ano', 'Tipo_Crime'])[
         'populacao', 'ocorrencias', 'taxa_desemprego'].sum().reset_index()
     new_dataframe_groupby['taxa_ocorrencia'] = (new_dataframe_groupby['ocorrencias'] / new_dataframe_groupby['populacao']) * 100000
 
-    list(map(lambda x: calculateCorrelationCrimeDesempregoPorRegiao(new_dataframe_groupby, x), CRIMES))
+    list(map(lambda x: calculateCorrelationCrimeDesempregoRegiao(new_dataframe_groupby, x), CRIMES))
     df = pd.DataFrame({"regiao": dataframe_tuple[2], "correlacao": new_dataframe_groupby["corr"], "tipo_crime": new_dataframe_groupby["Tipo_Crime"]})
     return df
 
+
+def formatRegiaoDataframeToPlot(dataframe, tuple_df):
+    dataframe.loc[tuple_df[1]["regiao"], tuple_df[1]["tipo_crime"]] = tuple_df[1]["correlacao"]
+
+
+def generateRegiaoDataframe():
+    ## Dataframes de ocorrências por região
+    NORTE = df_result[(df_result.estado_ibge > 10) & (df_result.estado_ibge < 20)].groupby(
+        ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
+    NORDESTE = df_result[(df_result.estado_ibge > 20) & (df_result.estado_ibge < 30)].groupby(
+        ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
+    SUDESTE = df_result[(df_result.estado_ibge > 30) & (df_result.estado_ibge < 40)].groupby(
+        ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
+    SUL = df_result[(df_result.estado_ibge > 40) & (df_result.estado_ibge < 50)].groupby(
+        ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
+    CENTRO_OESTE = df_result[(df_result.estado_ibge >= 50) & (df_result.estado_ibge < 60)].groupby(
+        ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
+
+    ## Dataframes de desempregados por região
+    df_json_desemprego = getDataFrameEmpregosFromJson()
+    NORTE_DESEMPREGADOS = df_json_desemprego[
+        (df_json_desemprego.estado_ibge > 10) & (df_json_desemprego.estado_ibge < 20)]
+    NORDESTE_DESEMPREGADOS = df_json_desemprego[
+        (df_json_desemprego.estado_ibge > 20) & (df_json_desemprego.estado_ibge < 30)]
+    SUDESTE_DESEMPREGADOS = df_json_desemprego[
+        (df_json_desemprego.estado_ibge > 30) & (df_json_desemprego.estado_ibge < 40)]
+    SUL_DESEMPREGADOS = df_json_desemprego[
+        (df_json_desemprego.estado_ibge > 40) & (df_json_desemprego.estado_ibge < 50)]
+    CENTRO_OESTE_DESEMPREGADOS = df_json_desemprego[
+        (df_json_desemprego.estado_ibge >= 50) & (df_json_desemprego.estado_ibge < 60)]
+    LISTA_DFS_REGIOES = [
+        (NORTE, NORTE_DESEMPREGADOS, "NORTE"),
+        (NORDESTE, NORDESTE_DESEMPREGADOS, "NORDESTE"),
+        (SUDESTE, SUDESTE_DESEMPREGADOS, "SUDESTE"),
+        (SUL, SUL_DESEMPREGADOS, "SUL"),
+        (CENTRO_OESTE, CENTRO_OESTE_DESEMPREGADOS, 'CENTRO-OESTE')
+    ]
+    df_regioes_correlacao = reduce(lambda x1, y1: pd.concat([x1, y1]),
+                                   list(map(processDataframeToCalculateCorrelationRegiao, LISTA_DFS_REGIOES)))
+    # df_regioes_correlacao.drop_duplicates().to_csv("teste.csv")
+    df_to_fill = pd.DataFrame()
+    list(map(lambda x: formatRegiaoDataframeToPlot(df_to_fill, x), df_regioes_correlacao.iterrows()))
+    return df_to_fill
 
 """
 Dataframes base
@@ -198,35 +244,7 @@ df_result = getDataframePrincipal()
 
 
 # Dataframe Correlação por região
-NORTE = df_result[(df_result.estado_ibge > 10) & (df_result.estado_ibge < 20)].groupby(['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-NORDESTE = df_result[(df_result.estado_ibge > 20) & (df_result.estado_ibge < 30)].groupby(['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-SUDESTE = df_result[(df_result.estado_ibge > 30) & (df_result.estado_ibge < 40)].groupby(['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-SUL = df_result[(df_result.estado_ibge > 40) & (df_result.estado_ibge < 50)].groupby(['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-CENTRO_OESTE = df_result[(df_result.estado_ibge >= 50) & (df_result.estado_ibge < 60)].groupby(['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-
-## Dataframes de desempregados por região
-df_json_desemprego = getDataFrameEmpregosFromJson()
-NORTE_DESEMPREGADOS = df_json_desemprego[(df_json_desemprego.estado_ibge > 10) & (df_json_desemprego.estado_ibge < 20)]
-NORDESTE_DESEMPREGADOS = df_json_desemprego[(df_json_desemprego.estado_ibge > 20) & (df_json_desemprego.estado_ibge < 30)]
-SUDESTE_DESEMPREGADOS = df_json_desemprego[(df_json_desemprego.estado_ibge > 30) & (df_json_desemprego.estado_ibge < 40)]
-SUL_DESEMPREGADOS = df_json_desemprego[(df_json_desemprego.estado_ibge > 40) & (df_json_desemprego.estado_ibge < 50)]
-CENTRO_OESTE_DESEMPREGADOS = df_json_desemprego[(df_json_desemprego.estado_ibge >= 50) & (df_json_desemprego.estado_ibge < 60)]
-
-LISTA_DFS_REGIOES = [
-    (NORTE, NORTE_DESEMPREGADOS, "NORTE"),
-    (NORDESTE, NORDESTE_DESEMPREGADOS, "NORDESTE"),
-    (SUDESTE, SUDESTE_DESEMPREGADOS, "SUDESTE"),
-    (SUL, SUL_DESEMPREGADOS, "SUL"),
-    (CENTRO_OESTE, CENTRO_OESTE_DESEMPREGADOS, 'CENTRO-OESTE')
-]
-
-
-x = reduce(lambda x1, y1: pd.concat([x1, y1]), list(map(formatDataframeToCalculateCorrelation, LISTA_DFS_REGIOES)))
-
-x.drop_duplicates().to_csv("teste.csv")
-
-
-
+DF_REGIAO = generateRegiaoDataframe()
 
 
 """
@@ -431,7 +449,7 @@ def plotCorrelationMatrixHeatmap(dict_estados):
     list(map(lambda x: getCorrelationDataframe(df_filtered, x), dict_estados))
     corr = pd.DataFrame()
     list(map(lambda x: formatDataframeToPlotCorrelation(corr, x), df_filtered.iterrows()))
-    plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
+    plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego por UF")
     plt.pcolor(corr, cmap="Spectral_r")
     plt.yticks(np.arange(0.5, len(corr.index), 1), corr.index, fontsize=7)
     plt.xticks(np.arange(0.5, len(corr.columns), 1), corr.columns, rotation=45, ha='right', fontsize=8)
@@ -442,8 +460,8 @@ def plotCorrelationMatrixHeatmap(dict_estados):
 
 
 def plotCorrelationMatrixHeatmapRegiao(dataframe):
-    plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego")
-    plt.pcolor(dataframe, cmap="Spectral_r")
+    plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego por Região")
+    plt.pcolor(dataframe, cmap="Spectral_r", vmin=-1, vmax=1)
     plt.yticks(np.arange(0.5, len(dataframe.index), 1), dataframe.index, fontsize=7)
     plt.xticks(np.arange(0.5, len(dataframe.columns), 1), dataframe.columns, rotation=45, ha='right', fontsize=8)
     plt.tight_layout()
@@ -461,11 +479,10 @@ Main
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 # plotCorrelationMatrixHeatmap(ESTADOS_SIGLAS)
-z = pd.read_csv("teste.csv")
-# # print(z)
-edf = pd.DataFrame()
-print(z.columns.values)
-for row in z.iterrows():
-    edf.loc[row[1]["regiao"], row[1]["tipo_crime"]] = row[1]["correlacao"]
-print(edf)
-plotCorrelationMatrixHeatmapRegiao(edf)
+# z = pd.read_csv("teste.csv")
+# edf = pd.DataFrame()
+# print(z.columns.values)
+# for row in z.iterrows():
+#     edf.loc[row[1]["regiao"], row[1]["tipo_crime"]] = row[1]["correlacao"]
+# print(edf)
+plotCorrelationMatrixHeatmapRegiao(DF_REGIAO)
