@@ -80,7 +80,13 @@ REGIOES = [
     "Sul"
 ]
 
-
+DICT_REGIOES = {
+    "NORTE": 11,
+    "NORDESTE:": 21,
+    "SUDESTE": 31,
+    "SUL": 41,
+    "CENTRO-OESTE": 50
+}
 
 ESTADOS_SIGLAS = {
     'AC': 'Acre',
