@@ -5,9 +5,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from functools import reduce
-
 from matplotlib import colors
-
 from src.data_sources.dataframes_empregos import getDataFramesEmpregos, getDataFrameEmpregosFromJson
 from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencias, getDataframesOcorrenciasAno, \
     ESTADOS_DIR, getDataFrameOcorrenciasFromCsv
@@ -141,6 +139,12 @@ def getAllChartData(dfx, dfy, crime, setor_sem_barra):
 
 
 def createDataframesByRegion(region, region_desempregados):
+    """
+    Função para gerar os dataframes com dados de regiões, consolidando os dados dos estados
+    :param region: pd.DataFrame
+    :param region_desempregados: pd.DataFrame
+    :return: pd.DataFrame
+    """
     new_df = pd.merge(region_desempregados,
                       region,
                       on=['estado_ibge', 'ano'],
@@ -165,8 +169,12 @@ def calculateCorrelationCrimeDesempregoRegiao(dataframe, crime):
 
 
 def processDataframeToCalculateCorrelationRegiao(dataframe_tuple):
+    """
+    Função para gerar os dataframes com a correlação
+    :param dataframe_tuple: tuple
+    :return: pd.DataFrame
+    """
     new_dataframe = createDataframesByRegion(dataframe_tuple[0], dataframe_tuple[1])
-    new_dataframe.to_csv("teste.csv")
     new_dataframe_groupby = new_dataframe.groupby(['ano', 'Tipo_Crime'])[
         'populacao', 'ocorrencias', 'taxa_desemprego'].sum().reset_index()
     new_dataframe_groupby['taxa_ocorrencia'] = (new_dataframe_groupby['ocorrencias'] / new_dataframe_groupby['populacao']) * 100000
@@ -177,23 +185,31 @@ def processDataframeToCalculateCorrelationRegiao(dataframe_tuple):
 
 
 def formatRegiaoDataframeToPlot(dataframe, tuple_df):
+    """
+    Função para montar o dataframe a ser utilizado para a plotagem do heatmap de correlação por região
+    :param dataframe: pd.DataFrame
+    :param tuple_df: tuple
+    :return: pd.DataFrame
+    """
     dataframe.loc[tuple_df[1]["regiao"], tuple_df[1]["tipo_crime"]] = tuple_df[1]["correlacao"]
 
 
-def generateRegiaoDataframe():
-    ## Dataframes de ocorrências por região
-    NORTE = df_result[(df_result.estado_ibge > 10) & (df_result.estado_ibge < 20)].groupby(
+def getRegiaoDataframe():
+    """
+    Função para compor o dataframe utilizado para plotagem do heatmap de correlação por região
+    :return: pd.DataFrame
+    """
+    NORTE = df_principal[(df_principal.estado_ibge > 10) & (df_principal.estado_ibge < 20)].groupby(
         ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-    NORDESTE = df_result[(df_result.estado_ibge > 20) & (df_result.estado_ibge < 30)].groupby(
+    NORDESTE = df_principal[(df_principal.estado_ibge > 20) & (df_principal.estado_ibge < 30)].groupby(
         ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-    SUDESTE = df_result[(df_result.estado_ibge > 30) & (df_result.estado_ibge < 40)].groupby(
+    SUDESTE = df_principal[(df_principal.estado_ibge > 30) & (df_principal.estado_ibge < 40)].groupby(
         ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-    SUL = df_result[(df_result.estado_ibge > 40) & (df_result.estado_ibge < 50)].groupby(
+    SUL = df_principal[(df_principal.estado_ibge > 40) & (df_principal.estado_ibge < 50)].groupby(
         ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
-    CENTRO_OESTE = df_result[(df_result.estado_ibge >= 50) & (df_result.estado_ibge < 60)].groupby(
+    CENTRO_OESTE = df_principal[(df_principal.estado_ibge >= 50) & (df_principal.estado_ibge < 60)].groupby(
         ['ano', 'populacao', 'estado_ibge', 'Tipo_Crime'])['ocorrencias'].sum().reset_index()
 
-    ## Dataframes de desempregados por região
     df_json_desemprego = getDataFrameEmpregosFromJson()
     NORTE_DESEMPREGADOS = df_json_desemprego[
         (df_json_desemprego.estado_ibge > 10) & (df_json_desemprego.estado_ibge < 20)]
@@ -205,6 +221,7 @@ def generateRegiaoDataframe():
         (df_json_desemprego.estado_ibge > 40) & (df_json_desemprego.estado_ibge < 50)]
     CENTRO_OESTE_DESEMPREGADOS = df_json_desemprego[
         (df_json_desemprego.estado_ibge >= 50) & (df_json_desemprego.estado_ibge < 60)]
+
     LISTA_DFS_REGIOES = [
         (NORTE, NORTE_DESEMPREGADOS, "NORTE"),
         (NORDESTE, NORDESTE_DESEMPREGADOS, "NORDESTE"),
@@ -212,39 +229,12 @@ def generateRegiaoDataframe():
         (SUL, SUL_DESEMPREGADOS, "SUL"),
         (CENTRO_OESTE, CENTRO_OESTE_DESEMPREGADOS, 'CENTRO-OESTE')
     ]
+
     df_regioes_correlacao = reduce(lambda x1, y1: pd.concat([x1, y1]),
                                    list(map(processDataframeToCalculateCorrelationRegiao, LISTA_DFS_REGIOES)))
-    # df_regioes_correlacao.drop_duplicates().to_csv("teste.csv")
     df_to_fill = pd.DataFrame()
     list(map(lambda x: formatRegiaoDataframeToPlot(df_to_fill, x), df_regioes_correlacao.iterrows()))
     return df_to_fill
-
-"""
-Dataframes base
-"""
-
-
-# Dataframe de população
-dfs_populacao = list(map(getDataframePopState, ANOS))
-df_populacao = pd.concat(dfs_populacao)
-
-## Dataframe população por região
-lista_dfs_regioes_populacao = getDataframeRegions()
-
-# Dataframe de empregos
-dfs_empregos = getDataFramesEmpregos()
-
-# Dataframe de ocorrências
-dfs_ocorrencias = getDataframesTotalOcorrencias()
-dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
-dfs_ocorrencias_groupby_ano = dfs_ocorrencias.groupby(['ano', 'Sigla_UF'])['PC-Qtde_Ocorrências'].sum().reset_index()
-
-# Dataframe principal
-df_result = getDataframePrincipal()
-
-
-# Dataframe Correlação por região
-DF_REGIAO = generateRegiaoDataframe()
 
 
 """
@@ -431,9 +421,9 @@ def plotHeatMapBrazilOcorrencias(arquivo):
     :param arquivo: string
     :return: void
     """
-    global df_result
+    global df_principal
 
-    df_result2 = df_result.loc[df_result.ano == int(arquivo[-4:])]
+    df_result2 = df_principal.loc[df_principal.ano == int(arquivo[-4:])]
     list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
 
 
@@ -443,7 +433,7 @@ def plotCorrelationMatrixHeatmap(dict_estados):
     :param dict_estados: Dictionary
     :return: void
     """
-    df_filtered = df_result.filter(
+    df_filtered = df_principal.filter(
         ["Tipo_Crime", "ocorrencias", "Sigla_UF", "populacao", "taxa_ocorrencia", "taxa_desemprego"], axis=1)
 
     list(map(lambda x: getCorrelationDataframe(df_filtered, x), dict_estados))
@@ -460,6 +450,11 @@ def plotCorrelationMatrixHeatmap(dict_estados):
 
 
 def plotCorrelationMatrixHeatmapRegiao(dataframe):
+    """
+    Função para plotar o heatmap da matriz de correlação entre taxa de desempregados e taxa de ocorrências, por região
+    :param dataframe: pd.DataFrame
+    :return: void
+    """
     plt.title("Correlação de Taxa de ocorrências \ncom Taxa de desemprego por Região")
     plt.pcolor(dataframe, cmap="Spectral_r", vmin=-1, vmax=1)
     plt.yticks(np.arange(0.5, len(dataframe.index), 1), dataframe.index, fontsize=7)
@@ -468,6 +463,34 @@ def plotCorrelationMatrixHeatmapRegiao(dataframe):
     plt.colorbar()
     plt.savefig("graficos/correlacao_por_crime_regiao.png", dpi=300)
     plt.gcf().clear()
+
+
+"""
+Dataframes base
+"""
+
+
+# Dataframe de população
+dfs_populacao = list(map(getDataframePopState, ANOS))
+df_populacao = pd.concat(dfs_populacao)
+
+## Dataframe população por região
+lista_dfs_regioes_populacao = getDataframeRegions()
+
+# Dataframe de empregos
+dfs_empregos = getDataFramesEmpregos()
+
+# Dataframe de ocorrências
+dfs_ocorrencias = getDataframesTotalOcorrencias()
+dfs_ocorrencias['ano_ocorrencia'] = dfs_ocorrencias.Mês_Ano.str[3:]
+dfs_ocorrencias_groupby_ano = dfs_ocorrencias.groupby(['ano', 'Sigla_UF'])['PC-Qtde_Ocorrências'].sum().reset_index()
+
+# Dataframe principal
+df_principal = getDataframePrincipal()
+
+# Dataframe Correlação por região
+df_regiao = getRegiaoDataframe()
+
 
 """
 Main
@@ -479,10 +502,4 @@ Main
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 # plotCorrelationMatrixHeatmap(ESTADOS_SIGLAS)
-# z = pd.read_csv("teste.csv")
-# edf = pd.DataFrame()
-# print(z.columns.values)
-# for row in z.iterrows():
-#     edf.loc[row[1]["regiao"], row[1]["tipo_crime"]] = row[1]["correlacao"]
-# print(edf)
-plotCorrelationMatrixHeatmapRegiao(DF_REGIAO)
+# plotCorrelationMatrixHeatmapRegiao(DF_REGIAO)
