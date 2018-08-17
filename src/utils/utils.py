@@ -21,6 +21,23 @@ CRIMES = [
     'Estupro'
 ]
 
+CATEGORIAS_CRIMES = [
+    "Crime contra a vida",
+    "Crime contra o patrimônio"
+]
+
+CRIMES_CONTRA_PATRIMONIO = [
+    'Roubo de veículo',
+    'Furto de veículo'
+]
+
+CRIMES_CONTRA_VIDA = [
+    'Roubo seguido de morte (latrocínio)',
+    'Lesão corporal seguida de morte',
+    'Homicídio doloso',
+    'Estupro'
+]
+
 ANOS = [
     '2010',
     '2011',

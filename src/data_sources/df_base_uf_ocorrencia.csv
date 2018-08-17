@@ -1,0 +1,163 @@
+,tipo_crime,uf
+0,Roubo seguido de morte (latrocínio),AC
+1,Roubo de veículo,AC
+2,Lesão corporal seguida de morte,AC
+3,Homicídio doloso,AC
+4,Furto de veículo,AC
+5,Estupro,AC
+6,Roubo seguido de morte (latrocínio),AL
+7,Roubo de veículo,AL
+8,Lesão corporal seguida de morte,AL
+9,Homicídio doloso,AL
+10,Furto de veículo,AL
+11,Estupro,AL
+12,Roubo seguido de morte (latrocínio),AM
+13,Roubo de veículo,AM
+14,Lesão corporal seguida de morte,AM
+15,Homicídio doloso,AM
+16,Furto de veículo,AM
+17,Estupro,AM
+18,Roubo seguido de morte (latrocínio),AP
+19,Roubo de veículo,AP
+20,Lesão corporal seguida de morte,AP
+21,Homicídio doloso,AP
+22,Furto de veículo,AP
+23,Estupro,AP
+24,Roubo seguido de morte (latrocínio),BA
+25,Roubo de veículo,BA
+26,Lesão corporal seguida de morte,BA
+27,Homicídio doloso,BA
+28,Furto de veículo,BA
+29,Estupro,BA
+30,Roubo seguido de morte (latrocínio),CE
+31,Roubo de veículo,CE
+32,Lesão corporal seguida de morte,CE
+33,Homicídio doloso,CE
+34,Furto de veículo,CE
+35,Estupro,CE
+36,Roubo seguido de morte (latrocínio),DF
+37,Roubo de veículo,DF
+38,Lesão corporal seguida de morte,DF
+39,Homicídio doloso,DF
+40,Furto de veículo,DF
+41,Estupro,DF
+42,Roubo seguido de morte (latrocínio),ES
+43,Roubo de veículo,ES
+44,Lesão corporal seguida de morte,ES
+45,Homicídio doloso,ES
+46,Furto de veículo,ES
+47,Estupro,ES
+48,Roubo seguido de morte (latrocínio),GO
+49,Roubo de veículo,GO
+50,Lesão corporal seguida de morte,GO
+51,Homicídio doloso,GO
+52,Furto de veículo,GO
+53,Estupro,GO
+54,Roubo seguido de morte (latrocínio),MA
+55,Roubo de veículo,MA
+56,Lesão corporal seguida de morte,MA
+57,Homicídio doloso,MA
+58,Furto de veículo,MA
+59,Estupro,MA
+60,Roubo seguido de morte (latrocínio),MT
+61,Roubo de veículo,MT
+62,Lesão corporal seguida de morte,MT
+63,Homicídio doloso,MT
+64,Furto de veículo,MT
+65,Estupro,MT
+66,Roubo seguido de morte (latrocínio),MS
+67,Roubo de veículo,MS
+68,Lesão corporal seguida de morte,MS
+69,Homicídio doloso,MS
+70,Furto de veículo,MS
+71,Estupro,MS
+72,Roubo seguido de morte (latrocínio),MG
+73,Roubo de veículo,MG
+74,Lesão corporal seguida de morte,MG
+75,Homicídio doloso,MG
+76,Furto de veículo,MG
+77,Estupro,MG
+78,Roubo seguido de morte (latrocínio),PA
+79,Roubo de veículo,PA
+80,Lesão corporal seguida de morte,PA
+81,Homicídio doloso,PA
+82,Furto de veículo,PA
+83,Estupro,PA
+84,Roubo seguido de morte (latrocínio),PB
+85,Roubo de veículo,PB
+86,Lesão corporal seguida de morte,PB
+87,Homicídio doloso,PB
+88,Furto de veículo,PB
+89,Estupro,PB
+90,Roubo seguido de morte (latrocínio),PE
+91,Roubo de veículo,PE
+92,Lesão corporal seguida de morte,PE
+93,Homicídio doloso,PE
+94,Furto de veículo,PE
+95,Estupro,PE
+96,Roubo seguido de morte (latrocínio),PI
+97,Roubo de veículo,PI
+98,Lesão corporal seguida de morte,PI
+99,Homicídio doloso,PI
+100,Furto de veículo,PI
+101,Estupro,PI
+102,Roubo seguido de morte (latrocínio),PR
+103,Roubo de veículo,PR
+104,Lesão corporal seguida de morte,PR
+105,Homicídio doloso,PR
+106,Furto de veículo,PR
+107,Estupro,PR
+108,Roubo seguido de morte (latrocínio),RJ
+109,Roubo de veículo,RJ
+110,Lesão corporal seguida de morte,RJ
+111,Homicídio doloso,RJ
+112,Furto de veículo,RJ
+113,Estupro,RJ
+114,Roubo seguido de morte (latrocínio),RN
+115,Roubo de veículo,RN
+116,Lesão corporal seguida de morte,RN
+117,Homicídio doloso,RN
+118,Furto de veículo,RN
+119,Estupro,RN
+120,Roubo seguido de morte (latrocínio),RO
+121,Roubo de veículo,RO
+122,Lesão corporal seguida de morte,RO
+123,Homicídio doloso,RO
+124,Furto de veículo,RO
+125,Estupro,RO
+126,Roubo seguido de morte (latrocínio),RR
+127,Roubo de veículo,RR
+128,Lesão corporal seguida de morte,RR
+129,Homicídio doloso,RR
+130,Furto de veículo,RR
+131,Estupro,RR
+132,Roubo seguido de morte (latrocínio),RS
+133,Roubo de veículo,RS
+134,Lesão corporal seguida de morte,RS
+135,Homicídio doloso,RS
+136,Furto de veículo,RS
+137,Estupro,RS
+138,Roubo seguido de morte (latrocínio),SC
+139,Roubo de veículo,SC
+140,Lesão corporal seguida de morte,SC
+141,Homicídio doloso,SC
+142,Furto de veículo,SC
+143,Estupro,SC
+144,Roubo seguido de morte (latrocínio),SE
+145,Roubo de veículo,SE
+146,Lesão corporal seguida de morte,SE
+147,Homicídio doloso,SE
+148,Furto de veículo,SE
+149,Estupro,SE
+150,Roubo seguido de morte (latrocínio),SP
+151,Roubo de veículo,SP
+152,Lesão corporal seguida de morte,SP
+153,Homicídio doloso,SP
+154,Furto de veículo,SP
+155,Estupro,SP
+156,Roubo seguido de morte (latrocínio),TO
+157,Roubo de veículo,TO
+158,Lesão corporal seguida de morte,TO
+159,Homicídio doloso,TO
+160,Furto de veículo,TO
+161,Estupro,TO

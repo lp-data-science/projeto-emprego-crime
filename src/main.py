@@ -12,7 +12,7 @@ from src.data_sources.dataframes_ocorrencias import getDataframesTotalOcorrencia
 from src.data_sources.dataframes_população import getDataframePopState, getDataframeRegions, \
     getDataFramePopulacaoFromCsv
 from src.utils.utils import ANOS, CRIMES, ESTADOS_SIGLAS, SIGLAS_UF, ARQUIVOS_OCORRENCIAS, CATEGORIAS_EMPREGOS, \
-    getCategoriasFaixaEtaria, DICT_REGIOES
+    getCategoriasFaixaEtaria, DICT_REGIOES, CRIMES_CONTRA_VIDA, CRIMES_CONTRA_PATRIMONIO, CATEGORIAS_CRIMES
 
 colorsIBGE = ['mediumblue', 'red', 'lime', 'purple', 'grey', 'black', 'darkolivegreen']
 axIBGE = None
@@ -415,6 +415,30 @@ def plotEstadoHeatMap(arquivo, df_groupby, crime):
     plt.gcf().clear()
 
 
+def plotEstadoCategoriaCrimeHeatMap(arquivo, df_groupby, crime):
+    """
+    Função que gera e salva os gráficos de mapas de calor em arquivo de imagem
+    :param arquivo: String
+    :param df_groupby: pandas.DataFrame
+    :param crime: String
+    :return: void
+    """
+    brazil_shape = gpd.read_file(ESTADOS_DIR)
+
+    df_brazil_shape = pd.DataFrame(brazil_shape)
+    df_brazil_shape["CD_GEOCUF"] = df_brazil_shape["CD_GEOCUF"].apply(int)
+    df_brazil_shape.rename(columns={"CD_GEOCUF": "estado_ibge"}, inplace=True)
+
+    df_join_groupby_shape = df_groupby.join(df_brazil_shape.set_index("estado_ibge"), on="estado_ibge")
+
+    geodf_join_groupby_shape = gpd.GeoDataFrame(df_join_groupby_shape[df_join_groupby_shape.Tipo_Crime == crime])
+    geodf_join_groupby_shape.plot(column="taxa_ocorrencia", cmap="autumn_r", legend=True, vmin=0, vmax=160)
+
+    plt.axis("off")
+    plt.title(f'Proporção Crimes X População ({arquivo[-4:]})\n(a cada 100.000 habitantes)')
+    plt.savefig(f'graficos/ocorrencias/fig_cat_{crime}_{arquivo[-4:]}')
+    plt.gcf().clear()
+
 def plotHeatMapBrazilOcorrencias(arquivo):
     """
     função que plota os gráficos dos crimes anualmente de forma proporcional
@@ -425,6 +449,29 @@ def plotHeatMapBrazilOcorrencias(arquivo):
 
     df_result2 = df_principal.loc[df_principal.ano == int(arquivo[-4:])]
     list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
+
+
+def mapCrimeToCategory(row):
+    if row[1]["Tipo_Crime"] in CRIMES_CONTRA_VIDA:
+        return "Crime contra a vida"
+    else:
+        return "Crime contra o patrimônio"
+
+
+
+def plotHeatMapBrazilOcorrenciasCategoria(arquivo):
+    """
+    função que plota os gráficos dos crimes anualmente de forma proporcional
+    :param arquivo: string
+    :return: void
+    """
+    global df_principal
+
+    df_result2 = df_principal.loc[df_principal.ano == int(arquivo[-4:])]
+    df_result2.to_csv("teste2.csv")
+    df_result2.loc[(df_result2.Tipo_Crime.isin(CRIMES_CONTRA_VIDA)) , "Tipo_Crime"] = "Crime contra a vida"
+    df_result2.loc[(df_result2.Tipo_Crime.isin(CRIMES_CONTRA_PATRIMONIO)), "Tipo_Crime"] = "Crime contra o patrimônio"
+    list(map(lambda x: plotEstadoCategoriaCrimeHeatMap(arquivo, df_result2, x), CATEGORIAS_CRIMES))
 
 
 def plotCorrelationMatrixHeatmap(dict_estados):
@@ -503,3 +550,4 @@ Main
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 # plotCorrelationMatrixHeatmap(ESTADOS_SIGLAS)
 # plotCorrelationMatrixHeatmapRegiao(DF_REGIAO)
+list(map(plotHeatMapBrazilOcorrenciasCategoria, ARQUIVOS_OCORRENCIAS))
