@@ -451,24 +451,15 @@ def plotHeatMapBrazilOcorrencias(arquivo):
     list(map(lambda x: plotEstadoHeatMap(arquivo, df_result2, x), CRIMES))
 
 
-def mapCrimeToCategory(row):
-    if row[1]["Tipo_Crime"] in CRIMES_CONTRA_VIDA:
-        return "Crime contra a vida"
-    else:
-        return "Crime contra o patrimônio"
-
-
-
 def plotHeatMapBrazilOcorrenciasCategoria(arquivo):
     """
-    função que plota os gráficos dos crimes anualmente de forma proporcional
+    função que plota os gráficos dos crimes anualmente de forma proporcional por categoria de crime
     :param arquivo: string
     :return: void
     """
     global df_principal
 
     df_result2 = df_principal.loc[df_principal.ano == int(arquivo[-4:])]
-    df_result2.to_csv("teste2.csv")
     df_result2.loc[(df_result2.Tipo_Crime.isin(CRIMES_CONTRA_VIDA)) , "Tipo_Crime"] = "Crime contra a vida"
     df_result2.loc[(df_result2.Tipo_Crime.isin(CRIMES_CONTRA_PATRIMONIO)), "Tipo_Crime"] = "Crime contra o patrimônio"
     list(map(lambda x: plotEstadoCategoriaCrimeHeatMap(arquivo, df_result2, x), CATEGORIAS_CRIMES))
@@ -547,7 +538,7 @@ Main
 # list(map(plotTaxaDesempregoFaixaEtaria, getCategoriasFaixaEtaria()))
 # list(map(plotDataframePopulacaoRegiaoGenero, lista_dfs_regioes_populacao))
 # list(map(plotHeatMapBrazilOcorrencias, ARQUIVOS_OCORRENCIAS))
+# list(map(plotHeatMapBrazilOcorrenciasCategoria, ARQUIVOS_OCORRENCIAS))
 # list(map(plotEmpregosOcorrencias, CATEGORIAS_EMPREGOS))
 # plotCorrelationMatrixHeatmap(ESTADOS_SIGLAS)
 # plotCorrelationMatrixHeatmapRegiao(DF_REGIAO)
-list(map(plotHeatMapBrazilOcorrenciasCategoria, ARQUIVOS_OCORRENCIAS))
